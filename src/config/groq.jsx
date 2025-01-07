@@ -2,6 +2,7 @@ import Groq from "groq-sdk";
 
 const groq = new Groq({
   apiKey: import.meta.env.VITE_API_KEY_GROQ,
+  dangerouslyAllowBrowser: true,
 });
 
 export async function getGroqChatCompletion(jobDescription) {

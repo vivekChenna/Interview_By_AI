@@ -181,7 +181,7 @@ const QuestionsPage = () => {
   // };
 
   return (
-    <div className=" flex flex-col items-center justify-center mt-20 h-full">
+    <div className=" flex flex-col items-center justify-center h-full">
       <div className="w-1/2 flex items-center md:flex-row flex-col md:gap-0 gap-5 justify-between mb-8">
         <button
           className="flex items-center  md:px-4 md:py-1 gap-2 text-gray-500 hover:opacity-80 transition-colors hover:duration-200"

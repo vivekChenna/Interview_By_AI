@@ -11,7 +11,7 @@ function App() {
   return (
     <BrowserRouter>
       <ContextProvider>
-        {/* <Header /> */}
+        <Header />
         <Routes>
           {/* <Route path="/" element={<Home />} /> */}
           <Route path="/" element={<JobDetails />} />

@@ -54,7 +54,7 @@ const JobDetails = () => {
   };
 
   return (
-    <div className=" flex flex-col w-full items-center justify-center gap-5 mb-5 md:mb-0 mt-20">
+    <div className=" flex flex-col w-full items-center justify-center gap-5 mb-5 md:mb-0">
       {/* title */}
       <h1 className=" sm:text-4xl text-3xl font-bold">
         Select a job description

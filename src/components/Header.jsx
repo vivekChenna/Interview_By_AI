@@ -9,16 +9,16 @@ const Header = () => {
         <div>
           <Link>
             <img
-              src={AiLogo}
+              src={'/andai.png'}
               alt="AI"
               className="
-            w-16 rounded-full"
+           w-14 rounded-md"
             />
           </Link>
         </div>
-        <h1 className=" font-bold font-sans text-xl drop-shadow">
+        {/* <h1 className=" font-bold font-sans text-xl drop-shadow">
           Interview By AI
-        </h1>
+        </h1> */}
       </div>
     </div>
   );

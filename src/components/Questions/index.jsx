@@ -97,8 +97,8 @@ const QuestionsPage = () => {
       },
       onCompleted: (data) => {
         console.log(data);
-        
-        console.log('date and time' , data?.Candidate?.[0]?.link_expiration)
+
+        console.log("date and time", data?.Candidate?.[0]?.link_expiration);
         const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
         const currentTime = new Date();
 
@@ -131,58 +131,58 @@ const QuestionsPage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   enableFullScreen(); // Enable fullscreen when the page loads
+  useEffect(() => {
+    enableFullScreen(); // Enable fullscreen when the page loads
 
-  //   const handleFullscreenChange = () => {
-  //     if (!document.fullscreenElement) {
-  //       // If the user exits fullscreen, re-enable it
-  //       enableFullScreen();
-  //     }
-  //   };
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        // If the user exits fullscreen, re-enable it
+        enableFullScreen();
+      }
+    };
 
-  //   // Add event listeners for fullscreen changes
-  //   document.addEventListener("fullscreenchange", handleFullscreenChange);
-  //   document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-  //   document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-  //   document.addEventListener("msfullscreenchange", handleFullscreenChange);
-  //   // document.addEventListener("contextmenu", (e) => {
-  //   //   e.preventDefault();
-  //   // });
+    // Add event listeners for fullscreen changes
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("msfullscreenchange", handleFullscreenChange);
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
 
-  //   return () => {
-  //     // Clean up event listeners
-  //     document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  //     // document.removeEventListener("contextmenu", disableRightClick);
-  //     document.removeEventListener(
-  //       "webkitfullscreenchange",
-  //       handleFullscreenChange
-  //     );
-  //     document.removeEventListener(
-  //       "mozfullscreenchange",
-  //       handleFullscreenChange
-  //     );
-  //     document.removeEventListener(
-  //       "msfullscreenchange",
-  //       handleFullscreenChange
-  //     );
-  //   };
-  // }, []);
+    return () => {
+      // Clean up event listeners
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "msfullscreenchange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
 
-  // useEffect(() => {
-  //   const handleVisibilityChange = () => {
-  //     if (document.hidden) {
-  //       alert("You cannot switch tabs during the interview.");
-  //       window.location.reload(); // Optionally reload or log the attempt
-  //     }
-  //   };
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        alert("You cannot switch tabs during the interview.");
+        window.location.reload(); // Optionally reload or log the attempt
+      }
+    };
 
-  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-  //   return () => {
-  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
-  //   };
-  // }, []);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   if (!browserSupportsSpeechRecognition) {
     return <p> your browser does not support speech recognition</p>;
@@ -321,7 +321,12 @@ const QuestionsPage = () => {
   // };
 
   return !startInterview ? (
-    <RulesAndRegulations setStartInterview={() => setStartInterview(true)} />
+    <RulesAndRegulations
+      setStartInterview={() => {
+        setStartInterview(true);
+        enableFullScreen();
+      }}
+    />
   ) : (
     <div className=" flex flex-col items-center justify-center h-full">
       <div className="w-1/2 flex items-center md:flex-row flex-col md:gap-0 gap-5 justify-between mb-8">

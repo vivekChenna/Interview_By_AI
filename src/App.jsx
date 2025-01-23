@@ -1,5 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
+import { ApolloProvider } from "@apollo/client";
+import client from "./config/graphql-client";
 import Header from "./components/Header";
 import Home from "./components/Home";
 import JobDetails from "./components/JobDetails/JobDetails";
@@ -9,17 +11,20 @@ import ErrorPage from "./components/ErrorPage/ErrorPage";
 
 function App() {
   return (
-    <BrowserRouter>
-      <ContextProvider>
-        <Header />
-        <Routes>
-          {/* <Route path="/" element={<Home />} /> */}
-          <Route path="/" element={<JobDetails />} />
-          <Route path="/questions" element={<QuestionsPage />} />
-          <Route path="/error" element={<ErrorPage />} />
-        </Routes>
-      </ContextProvider>
-    </BrowserRouter>
+    <ApolloProvider client={client}>
+      <BrowserRouter>
+        <ContextProvider>
+          <Header />
+          <Routes>
+            {/* <Route path="/" element={<Home />} /> */}
+            <Route path="/" element={<JobDetails />} />
+            {/* <Route path="/questions" element={<QuestionsPage />} /> */}
+            <Route path="/error" element={<ErrorPage />} />
+            <Route path="/interview/:userName/:jobRole/:uniqueId" element={<QuestionsPage/>} />
+          </Routes>
+        </ContextProvider>
+      </BrowserRouter>
+    </ApolloProvider>
   );
 }
 

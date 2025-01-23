@@ -10,7 +10,7 @@ const ErrorPage = () => {
         Please refresh the page and try Again
       </p>
       <div className=" w-max underline">
-        <Link to="/">go to home page</Link>
+        {/* <Link to="/">go to home page</Link> */}
       </div>
     </div>
   );

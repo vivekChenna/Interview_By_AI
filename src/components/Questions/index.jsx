@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Markdown from "react-markdown";
 import "regenerator-runtime/runtime";
 import { Context } from "../../context/context";
@@ -14,9 +15,19 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import Modal from "../Modal/Modal";
-import { reviewSolutions } from "../../config/groq";
+import { getGroqChatCompletion, reviewSolutions } from "../../config/groq";
+import { useMutation, useQuery } from "@apollo/client";
+import { gql } from "@apollo/client";
+import RulesAndRegulations from "../RulesAndRegulations";
+import { getQuestions } from "../../utils/questions";
+
 const QuestionsPage = () => {
-  const { questions, jobDescription } = useContext(Context);
+  const { userName, jobRole, uniqueId } = useParams();
+  const navigate = useNavigate();
+  console.log("unique id", uniqueId);
+
+  const { questions, jobDescription, setQuestions } = useContext(Context);
+  const [startInterview, setStartInterview] = useState(false);
   const [index, setIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -25,20 +36,153 @@ const QuestionsPage = () => {
   const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await getQuestions(); // Fetch questions
+        setQuestions(data); // Set questions in context
+      } catch (error) {
+        console.log("Failed to fetch questions. Please try again.");
+      } finally {
+        setLoading(false); // Stop loading after completion
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
   const [savedTranscript, setSavedTranscript] = useState([]);
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
   const [userScore, setUserScore] = useState("");
   const [loading, setLoading] = useState(false);
-  // const [QuestionBtn, setQuestionBtn] = useState(true);
-  // const [showShimmer, setShowShimmer] = useState(false);
-  // const [showFeedBack, setShowFeedBack] = useState("");
-  // const [showPreviousBtn, setShowPreviousBtn] = useState(false);
-  // const [ShowAiAnswer, setShowAiAnswer] = useState("");
-  // const [ShowAnswers, setShowAnswers] = useState({
-  //   feedback: false,
-  //   sample: false,
-  // });
+  const [saveQuestionAndAnswer] = useMutation(gql`
+    mutation SaveQuestionAndAnswer(
+      $candidateId: uuid!
+      $question: String!
+      $answer: String!
+    ) {
+      insert_Interview_responses_one(
+        object: {
+          candidate_id: $candidateId
+          question: $question
+          answer: $answer
+        }
+      ) {
+        id
+      }
+    }
+  `);
+
+  const {
+    data,
+    error,
+    loading: waiting,
+  } = useQuery(
+    gql`
+      query getCandidate($id: uuid!) {
+        Candidate(where: { id: { _eq: $id } }) {
+          id
+          name
+          email
+          job_role
+          link_expiration
+        }
+      }
+    `,
+    {
+      variables: {
+        id: uniqueId,
+      },
+      onCompleted: (data) => {
+        console.log(data);
+        
+        console.log('date and time' , data?.Candidate?.[0]?.link_expiration)
+        const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
+        const currentTime = new Date();
+
+        console.log("expiration", expirationTime);
+        console.log("current time", currentTime);
+
+        if (currentTime > expirationTime) {
+          navigate("/error");
+        }
+      },
+      onError: (error) => {
+        console.log("something went wrong");
+      },
+    }
+  );
+
+  const enableFullScreen = () => {
+    setStartInterview(true);
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch((err) => {
+        console.error("Error enabling fullscreen mode:", err);
+      });
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  };
+
+  // useEffect(() => {
+  //   enableFullScreen(); // Enable fullscreen when the page loads
+
+  //   const handleFullscreenChange = () => {
+  //     if (!document.fullscreenElement) {
+  //       // If the user exits fullscreen, re-enable it
+  //       enableFullScreen();
+  //     }
+  //   };
+
+  //   // Add event listeners for fullscreen changes
+  //   document.addEventListener("fullscreenchange", handleFullscreenChange);
+  //   document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+  //   document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+  //   document.addEventListener("msfullscreenchange", handleFullscreenChange);
+  //   // document.addEventListener("contextmenu", (e) => {
+  //   //   e.preventDefault();
+  //   // });
+
+  //   return () => {
+  //     // Clean up event listeners
+  //     document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  //     // document.removeEventListener("contextmenu", disableRightClick);
+  //     document.removeEventListener(
+  //       "webkitfullscreenchange",
+  //       handleFullscreenChange
+  //     );
+  //     document.removeEventListener(
+  //       "mozfullscreenchange",
+  //       handleFullscreenChange
+  //     );
+  //     document.removeEventListener(
+  //       "msfullscreenchange",
+  //       handleFullscreenChange
+  //     );
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       alert("You cannot switch tabs during the interview.");
+  //       window.location.reload(); // Optionally reload or log the attempt
+  //     }
+  //   };
+
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, []);
 
   if (!browserSupportsSpeechRecognition) {
     return <p> your browser does not support speech recognition</p>;
@@ -52,21 +196,10 @@ const QuestionsPage = () => {
     }
   };
 
-  // const HandlePreviousQuestion = () => {
-  //   if (index === 1) {
-  //     setShowPreviousBtn(false);
-  //     setIndex(index - 1);
-  //     HandleRestart();
-  //   } else {
-  //     setIndex(index - 1);
-  //     HandleRestart();
-  //   }
-  // };
-
   const reviewInterviewer = async () => {
     setLoading(true);
     const data = await reviewSolutions(jobDescription, savedTranscript);
-    setUserScore(data?.choices[0]?.message?.content)
+    setUserScore(data?.choices[0]?.message?.content);
   };
 
   const startListening = () => {
@@ -83,9 +216,6 @@ const QuestionsPage = () => {
     setShowSubmitBtn(false);
     resetTranscript();
     setShowNextQuestionBtn(false);
-    // setShowFeedBack("");
-    // setShowAiAnswer("");
-    // setQuestionBtn(true);
   };
 
   useEffect(() => {
@@ -132,6 +262,14 @@ const QuestionsPage = () => {
       // setShowShimmer(true);
       // const data = await runChat(questions[index]?.question, 1, transcript);
       // const ans = await runChat(questions[index]?.question, 2);
+      await saveQuestionAndAnswer({
+        variables: {
+          candidateId: uniqueId,
+          question: questions[index]?.question,
+          answer: transcript,
+        },
+      });
+
       setSavedTranscript((prev) => [
         ...prev,
         {
@@ -160,6 +298,8 @@ const QuestionsPage = () => {
       //   sample: true,
       // });
     } catch (error) {
+      console.log(error);
+
       // setShowShimmer(false);
       setErrorMsg("Internal Server Error, Please Click on Submit Once Again");
     }
@@ -180,16 +320,17 @@ const QuestionsPage = () => {
   //   }));
   // };
 
-  return (
+  return !startInterview ? (
+    <RulesAndRegulations setStartInterview={() => setStartInterview(true)} />
+  ) : (
     <div className=" flex flex-col items-center justify-center h-full">
       <div className="w-1/2 flex items-center md:flex-row flex-col md:gap-0 gap-5 justify-between mb-8">
-        <button
+        {/* <button
           className="flex items-center  md:px-4 md:py-1 gap-2 text-gray-500 hover:opacity-80 transition-colors hover:duration-200"
           onClick={HandleQuestionGeneration}
         >
           <FaArrowLeftLong color="#B0B0B0" /> Question Generation
-        </button>
-
+        </button> */}
         <div
           className={
             // showPreviousBtn
@@ -218,7 +359,7 @@ const QuestionsPage = () => {
         </div>
       </div>
       <div className="flex flex-col items-center justify-center w-full">
-        <div className=" md:w-1/2 w-11/12 min-h-80 border rounded-2xl p-4 shadow-sm">
+        <div className=" md:w-1/2 w-11/12 min-h-80 rounded-2xl p-4 shadow-md border border-gray-300">
           <div>
             <p className=" text-black md:text-2xl text-lg text-center font-semibold">
               {questions[index]?.question}

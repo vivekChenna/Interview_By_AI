@@ -20,9 +20,15 @@ import { useMutation, useQuery } from "@apollo/client";
 import { gql } from "@apollo/client";
 import RulesAndRegulations from "../RulesAndRegulations";
 import { getQuestions } from "../../utils/questions";
+import {
+  AI_Engineer,
+  Customer_Relations_Intern,
+} from "../../constants/JobDescription";
 
 const QuestionsPage = () => {
   const { userName, jobRole, uniqueId } = useParams();
+  console.log("job role", jobRole);
+
   const navigate = useNavigate();
   console.log("unique id", uniqueId);
 
@@ -40,12 +46,18 @@ const QuestionsPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const data = await getQuestions(); // Fetch questions
-        setQuestions(data); // Set questions in context
+        const data = await getQuestions(
+          jobRole === "AI Engineer"
+            ? AI_Engineer
+            : jobRole === "Customer Relations Intern"
+            ? Customer_Relations_Intern
+            : ""
+        );
+        setQuestions(data);
       } catch (error) {
         console.log("Failed to fetch questions. Please try again.");
       } finally {
-        setLoading(false); // Stop loading after completion
+        setLoading(false);
       }
     };
 
@@ -53,6 +65,8 @@ const QuestionsPage = () => {
   }, []);
 
   const [savedTranscript, setSavedTranscript] = useState([]);
+  const [isQuestionAndAnswerSaved, setIsQuestionAndAnswerSaved] =
+    useState(false);
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
   const [userScore, setUserScore] = useState("");
@@ -140,19 +154,19 @@ const QuestionsPage = () => {
       }
     };
 
+    const disableRightClick = (e) => e.preventDefault();
+
     // Add event listeners for fullscreen changes
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
     document.addEventListener("msfullscreenchange", handleFullscreenChange);
-    document.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-    });
+    // document.addEventListener("contextmenu", disableRightClick);
 
     return () => {
       // Clean up event listeners
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("contextmenu", disableRightClick);
+      // document.removeEventListener("contextmenu", disableRightClick);
       document.removeEventListener(
         "webkitfullscreenchange",
         handleFullscreenChange
@@ -172,7 +186,7 @@ const QuestionsPage = () => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         alert("You cannot switch tabs during the interview.");
-        window.location.reload(); // Optionally reload or log the attempt
+        // window.location.reload();
       }
     };
 
@@ -227,7 +241,7 @@ const QuestionsPage = () => {
             return prevTime + 1;
           } else {
             setIsRecording(false);
-            stopListening(); // Stop recording when time runs out
+            stopListening();
             setShowSubmitBtn(true);
             return 120;
           }
@@ -251,16 +265,10 @@ const QuestionsPage = () => {
       .padStart(2, "0")}`;
   };
 
-  console.log("savedtranscript", savedTranscript);
-
   const SubmitHandler = async () => {
-    // console.log("transcript");
-    // console.log(transcript);
     try {
       setErrorMsg("");
-      // setShowShimmer(true);
-      // const data = await runChat(questions[index]?.question, 1, transcript);
-      // const ans = await runChat(questions[index]?.question, 2);
+      setIsQuestionAndAnswerSaved(true);
       await saveQuestionAndAnswer({
         variables: {
           candidateId: uniqueId,
@@ -268,6 +276,7 @@ const QuestionsPage = () => {
           answer: transcript,
         },
       });
+      setIsQuestionAndAnswerSaved(false);
 
       setSavedTranscript((prev) => [
         ...prev,
@@ -276,14 +285,8 @@ const QuestionsPage = () => {
           answer: transcript,
         },
       ]);
-      // console.log("printing ans");
-      // console.log(ans);
-      // console.log("ans", typeof ans);
       setShowSubmitBtn(false);
-      // setShowShimmer(false);
-      // setShowFeedBack(data.toString());
-      // setShowAiAnswer(ans.toString());
-      // setQuestionBtn(false);
+
       if (index < questions.length - 1) {
         setShowNextQuestionBtn(true);
       } else {
@@ -292,14 +295,8 @@ const QuestionsPage = () => {
       if (index === questions.length - 1) {
         setShowEndAndReview(true);
       }
-      // setShowAnswers({
-      //   feedback: true,
-      //   sample: true,
-      // });
     } catch (error) {
       console.log(error);
-
-      // setShowShimmer(false);
       setErrorMsg("Internal Server Error, Please Click on Submit Once Again");
     }
   };
@@ -311,13 +308,6 @@ const QuestionsPage = () => {
   const ModalFunc = () => {
     setShowModal(false);
   };
-
-  // const HandleToggleAnswers = (key) => {
-  //   setShowAnswers((prevState) => ({
-  //     ...prevState,
-  //     [key]: !prevState[key],
-  //   }));
-  // };
 
   return !startInterview ? (
     <RulesAndRegulations
@@ -414,17 +404,12 @@ const QuestionsPage = () => {
           {showSubmitBtn && (
             <div className=" w-full flex items-center justify-center mt-8 gap-4">
               <button
+                disabled={isQuestionAndAnswerSaved}
                 className=" md:px-5 px-3 md:py-[6px] py-[3px] font-semibold rounded-2xl text-white bg-blue-950 shadow-md "
                 onClick={() => SubmitHandler()}
               >
-                Save
+                {isQuestionAndAnswerSaved ? "Saving..." : " Save"}
               </button>
-              {/* <button
-                className=" rounded-2xl text-black border border-gray-400 md:px-4 px-3 py-1"
-                onClick={() => HandleRestart()}
-              >
-                Retry
-              </button> */}
             </div>
           )}
 
@@ -450,59 +435,6 @@ const QuestionsPage = () => {
             </div>
           )}
         </div>
-        {/* <div className="md:w-1/2 w-11/12 border rounded-b-2xl mb-4 shadow-sm bg-slate-100 bg-opacity-40">
-          <div className=" flex flex-col border-b-2 px-5 py-3">
-            <div className=" flex items-center justify-between">
-              <p className="font-bold text-gray-500 md:text-lg">Feedback</p>
-              <button
-                disabled={showFeedBack.length > 0 ? false : true}
-                onClick={() => HandleToggleAnswers("feedback")}
-              >
-                <MdKeyboardArrowRight fontSize="1.5rem" />
-              </button>
-            </div>
-            {showShimmer ? (
-              <Skeleton count={5} />
-            ) : (
-              <div
-                className={
-                  ShowAnswers.feedback
-                    ? "pt-1 md:pb-4 pb-1 md:text-lg text-gray-600"
-                    : "hidden"
-                }
-              >
-                <Markdown>{showFeedBack}</Markdown>
-              </div>
-            )}
-          </div>
-          <div className=" flex flex-col px-5 py-3">
-            <div className=" flex items-center justify-between">
-              <p className=" font-bold text-gray-500 md:text-lg">
-                Sample Answer
-              </p>
-              <button
-                disabled={ShowAiAnswer.length > 0 ? false : true}
-                onClick={() => HandleToggleAnswers("sample")}
-              >
-                <MdKeyboardArrowRight fontSize="1.5rem" />
-              </button>
-            </div>
-
-            {showShimmer ? (
-              <Skeleton count={5} />
-            ) : (
-              <div
-                className={
-                  ShowAnswers.sample
-                    ? "pt-1 md:pb-4  md:text-lg text-gray-600"
-                    : "hidden"
-                }
-              >
-                <Markdown>{ShowAiAnswer}</Markdown>
-              </div>
-            )}
-          </div>
-        </div> */}
       </div>
 
       <div className=" flex items-center justify-center mx-6 mb-2">

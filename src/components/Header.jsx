@@ -9,7 +9,7 @@ const Header = () => {
         <div>
           <Link>
             <img
-              src={'/andai.png'}
+              src={'/newAndai.jpg'}
               alt="AI"
               className="
            w-14 rounded-md"

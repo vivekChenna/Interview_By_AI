@@ -8,7 +8,7 @@ import JobDetails from "./components/JobDetails/JobDetails";
 import QuestionsPage from "./components/Questions";
 import ContextProvider from "./context/context";
 import ErrorPage from "./components/ErrorPage/ErrorPage";
-import InterviewComplete from "./components/InterviewComplete/index";
+import InterviewComplete from "./components/InterviewComplete/index.jsx";
 
 function App() {
   return (

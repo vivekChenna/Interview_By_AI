@@ -8,6 +8,7 @@ import JobDetails from "./components/JobDetails/JobDetails";
 import QuestionsPage from "./components/Questions";
 import ContextProvider from "./context/context";
 import ErrorPage from "./components/ErrorPage/ErrorPage";
+import InterviewComplete from "./components/InterviewComplete";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             {/* <Route path="/questions" element={<QuestionsPage />} /> */}
             <Route path="/error" element={<ErrorPage />} />
             <Route path="/interview/:userName/:jobRole/:uniqueId" element={<QuestionsPage/>} />
+            <Route path="/complete" element={<InterviewComplete />} />
           </Routes>
         </ContextProvider>
       </BrowserRouter>

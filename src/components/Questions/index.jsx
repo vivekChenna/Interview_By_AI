@@ -70,7 +70,6 @@ const QuestionsPage = () => {
     useState(false);
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
-  const [userScore, setUserScore] = useState("");
   const [loading, setLoading] = useState(false);
   const [saveQuestionAndAnswer] = useMutation(gql`
     mutation SaveQuestionAndAnswer(
@@ -98,6 +97,18 @@ const QuestionsPage = () => {
       ) {
         id
         is_link_used
+      }
+    }
+  `);
+
+  const [updateUserScore] = useMutation(gql`
+    mutation updateUserScore($id: uuid!, $user_score: String!) {
+      update_Candidate_by_pk(
+        pk_columns: { id: $id }
+        _set: { user_score: $user_score }
+      ) {
+        id
+        user_score
       }
     }
   `);
@@ -229,9 +240,15 @@ const QuestionsPage = () => {
   };
 
   const reviewInterviewer = async () => {
-    setLoading(true);
     const data = await reviewSolutions(jobDescription, savedTranscript);
-    setUserScore(data?.choices[0]?.message?.content);
+    await updateUserScore({
+      variables: {
+        id: uniqueId,
+        user_score: data?.choices[0]?.message?.content,
+      },
+    });
+
+    navigate('/complete');
   };
 
   const startListening = () => {
@@ -427,7 +444,7 @@ const QuestionsPage = () => {
                 onClick={() => reviewInterviewer()}
                 disabled={loading}
               >
-                End & Review
+                End Interview
               </button>
             </div>
           )}
@@ -437,11 +454,6 @@ const QuestionsPage = () => {
       <div className=" flex items-center justify-center mx-6 mb-2">
         <p className=" text-red-600 ">{errorMsg}</p>
       </div>
-      {userScore !== "" && (
-        <div className="flex items-center justify-center mx-6 mt-5">
-          <p className=" text-green-500 sm:text-2xl">{`Your score is ${userScore}`}</p>
-        </div>
-      )}
 
       {showModal ? <Modal ModalFunc={ModalFunc} /> : null}
     </div>

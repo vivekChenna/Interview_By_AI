@@ -1,6 +1,6 @@
 import React from "react";
 
-function RulesAndRegulations({ setStartInterview }) {
+function RulesAndRegulations({ setStartInterview , isInterviewStarted }) {
   const rules = [
     "Right-clicking and inspecting the webpage are strictly prohibited.",
     "Avoid using any external devices, tools, or assistance during the interview.",
@@ -32,7 +32,7 @@ function RulesAndRegulations({ setStartInterview }) {
         onClick={() => setStartInterview()}
         className=" mt-5 bg-black/90 py-2 px-4 text-white rounded-md active:scale-90 font-medium"
       >
-        Start Interview
+       {isInterviewStarted ? "Loading..." : " Start Interview"}
       </button>
     </div>
   );

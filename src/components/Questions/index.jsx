@@ -42,6 +42,7 @@ const QuestionsPage = () => {
   const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isInterviewStarted, SetIsInterviewStarted] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -89,6 +90,18 @@ const QuestionsPage = () => {
     }
   `);
 
+  const [updateLinkUsed] = useMutation(gql`
+    mutation UpdateLinkUsed($id: uuid!) {
+      update_Candidate_by_pk(
+        pk_columns: { id: $id }
+        _set: { is_link_used: true }
+      ) {
+        id
+        is_link_used
+      }
+    }
+  `);
+
   const {
     data,
     error,
@@ -102,6 +115,7 @@ const QuestionsPage = () => {
           email
           job_role
           link_expiration
+          is_link_used
         }
       }
     `,
@@ -118,6 +132,11 @@ const QuestionsPage = () => {
 
         console.log("expiration", expirationTime);
         console.log("current time", currentTime);
+
+        if (data?.Candidate?.[0]?.is_link_used === true) {
+          navigate("/error");
+          console.log("this is called", data?.Candidate?.[0]?.link_expiration);
+        }
 
         if (currentTime > expirationTime) {
           navigate("/error");
@@ -252,7 +271,6 @@ const QuestionsPage = () => {
     }
 
     return () => {
-      // console.log("hello");
       clearInterval(timer);
     };
   }, [isRecording]);
@@ -301,17 +319,21 @@ const QuestionsPage = () => {
     }
   };
 
-  const HandleQuestionGeneration = () => {
-    setShowModal(true);
-  };
-
   const ModalFunc = () => {
     setShowModal(false);
   };
 
   return !startInterview ? (
     <RulesAndRegulations
-      setStartInterview={() => {
+      isInterviewStarted={isInterviewStarted}
+      setStartInterview={async () => {
+        SetIsInterviewStarted(true);
+        await updateLinkUsed({
+          variables: {
+            id: uniqueId,
+          },
+        });
+        SetIsInterviewStarted(false);
         setStartInterview(true);
         enableFullScreen();
       }}
@@ -319,36 +341,13 @@ const QuestionsPage = () => {
   ) : (
     <div className=" flex flex-col items-center justify-center h-full">
       <div className="w-1/2 flex items-center md:flex-row flex-col md:gap-0 gap-5 justify-between mb-8">
-        {/* <button
-          className="flex items-center  md:px-4 md:py-1 gap-2 text-gray-500 hover:opacity-80 transition-colors hover:duration-200"
-          onClick={HandleQuestionGeneration}
-        >
-          <FaArrowLeftLong color="#B0B0B0" /> Question Generation
-        </button> */}
         <div
           className={
-            // showPreviousBtn
-            // ?
             " border border-gray-400 flex items-center rounded-3xl py-1 px-3"
-            // : "border border-gray-400 flex items-center rounded-3xl py-1 pl-4"
           }
         >
-          {/* {showPreviousBtn && (
-            <button
-              className=" flex items-center mr-2"
-              onClick={HandlePreviousQuestion}
-            >
-              <MdKeyboardArrowLeft color="#B0B0B0" fontSize="1.5rem" />
-            </button>
-          )} */}
-
-          <button
-            className=" flex items-center gap-2 text-sm md:text-[16px]"
-            // onClick={handleNextQuestion}
-            // disabled={QuestionBtn}
-          >
+          <button className=" flex items-center gap-2 text-sm md:text-[16px]">
             Question {index + 1}
-            {/* <MdKeyboardArrowRight color="#B0B0B0" fontSize="1.5rem" /> */}
           </button>
         </div>
       </div>
@@ -359,8 +358,6 @@ const QuestionsPage = () => {
               {questions[index]?.question}
             </p>
           </div>
-
-          {/* timer */}
           <div className=" flex items-center justify-center mt-2">
             <p className=" text-gray-600 md:text-5xl text-2xl font-semibold ">
               {`${formatTime(timeLeft)}/2:00`}

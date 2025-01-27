@@ -6,7 +6,7 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { BsFillMicFill } from "react-icons/bs";
-import { FaPause } from "react-icons/fa";;
+import { FaPause } from "react-icons/fa";
 import "react-loading-skeleton/dist/skeleton.css";
 import Modal from "../Modal/Modal";
 import { reviewSolutions } from "../../config/groq";
@@ -41,6 +41,52 @@ const QuestionsPage = () => {
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isInterviewStarted, SetIsInterviewStarted] = useState(false);
+
+  const {
+    data,
+    error,
+    loading: waiting,
+  } = useQuery(
+    gql`
+      query getCandidate($id: uuid!) {
+        Candidate(where: { id: { _eq: $id } }) {
+          id
+          name
+          email
+          job_role
+          link_expiration
+          is_link_used
+        }
+      }
+    `,
+    {
+      variables: {
+        id: uniqueId,
+      },
+      onCompleted: (data) => {
+        // console.log(data);
+
+        // console.log("date and time", data?.Candidate?.[0]?.link_expiration);
+        const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
+        const currentTime = new Date();
+
+        // console.log("expiration", expirationTime);
+        // console.log("current time", currentTime);
+
+        if (data?.Candidate?.[0]?.is_link_used === true) {
+          navigate("/error");
+          // console.log("this is called", data?.Candidate?.[0]?.link_expiration);
+        }
+
+        if (currentTime > expirationTime) {
+          navigate("/error");
+        }
+      },
+      onError: (error) => {
+        // console.log("something went wrong");
+      },
+    }
+  );
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -119,51 +165,7 @@ const QuestionsPage = () => {
     }
   `);
 
-  const {
-    data,
-    error,
-    loading: waiting,
-  } = useQuery(
-    gql`
-      query getCandidate($id: uuid!) {
-        Candidate(where: { id: { _eq: $id } }) {
-          id
-          name
-          email
-          job_role
-          link_expiration
-          is_link_used
-        }
-      }
-    `,
-    {
-      variables: {
-        id: uniqueId,
-      },
-      onCompleted: (data) => {
-        // console.log(data);
-
-        // console.log("date and time", data?.Candidate?.[0]?.link_expiration);
-        const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
-        const currentTime = new Date();
-
-        // console.log("expiration", expirationTime);
-        // console.log("current time", currentTime);
-
-        if (data?.Candidate?.[0]?.is_link_used === true) {
-          navigate("/error");
-          // console.log("this is called", data?.Candidate?.[0]?.link_expiration);
-        }
-
-        if (currentTime > expirationTime) {
-          navigate("/error");
-        }
-      },
-      onError: (error) => {
-        // console.log("something went wrong");
-      },
-    }
-  );
+ 
 
   const enableFullScreen = () => {
     const elem = document.documentElement;
@@ -258,7 +260,7 @@ const QuestionsPage = () => {
   };
 
   const startListening = () => {
-    SpeechRecognition.startListening({ continuous: true });
+    SpeechRecognition.startListening({ continuous: true, language: "en-US" });
   };
 
   const stopListening = () => {
@@ -370,7 +372,7 @@ const QuestionsPage = () => {
           }
         >
           <button className=" flex items-center gap-2 text-sm md:text-[16px]">
-            Question {index + 1}
+            Question {index + 1} / 10
           </button>
         </div>
       </div>

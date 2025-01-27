@@ -1,36 +1,34 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Markdown from "react-markdown";
 import "regenerator-runtime/runtime";
 import { Context } from "../../context/context";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { BsFillMicFill } from "react-icons/bs";
-import { FaPause } from "react-icons/fa";
-import runChat from "../../config/gemini";
-import Skeleton from "react-loading-skeleton";
+import { FaPause } from "react-icons/fa";;
 import "react-loading-skeleton/dist/skeleton.css";
-import { FaArrowLeftLong } from "react-icons/fa6";
-import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md";
 import Modal from "../Modal/Modal";
-import { getGroqChatCompletion, reviewSolutions } from "../../config/groq";
+import { reviewSolutions } from "../../config/groq";
 import { useMutation, useQuery } from "@apollo/client";
 import { gql } from "@apollo/client";
 import RulesAndRegulations from "../RulesAndRegulations";
 import { getQuestions } from "../../utils/questions";
 import {
   AI_Engineer,
+  Content_Specialist,
   Customer_Relations_Intern,
+  Intern,
+  Product_Management_Intern,
+  UX_and_Interaction_Designer_Intern,
 } from "../../constants/JobDescription";
 
 const QuestionsPage = () => {
   const { userName, jobRole, uniqueId } = useParams();
-  console.log("job role", jobRole);
+  // console.log("job role", jobRole);
 
   const navigate = useNavigate();
-  console.log("unique id", uniqueId);
+  // console.log("unique id", uniqueId);
 
   const { questions, jobDescription, setQuestions } = useContext(Context);
   const [startInterview, setStartInterview] = useState(false);
@@ -52,11 +50,19 @@ const QuestionsPage = () => {
             ? AI_Engineer
             : jobRole === "Customer Relations Intern"
             ? Customer_Relations_Intern
+            : jobRole === "Product Management Intern"
+            ? Product_Management_Intern
+            : jobRole === "UX and Interaction Designer Intern"
+            ? UX_and_Interaction_Designer_Intern
+            : jobRole === "Intern"
+            ? Intern
+            : jobRole === "Content Specialist"
+            ? Content_Specialist
             : ""
         );
         setQuestions(data);
       } catch (error) {
-        console.log("Failed to fetch questions. Please try again.");
+        // console.log("Failed to fetch questions. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -135,18 +141,18 @@ const QuestionsPage = () => {
         id: uniqueId,
       },
       onCompleted: (data) => {
-        console.log(data);
+        // console.log(data);
 
-        console.log("date and time", data?.Candidate?.[0]?.link_expiration);
+        // console.log("date and time", data?.Candidate?.[0]?.link_expiration);
         const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
         const currentTime = new Date();
 
-        console.log("expiration", expirationTime);
-        console.log("current time", currentTime);
+        // console.log("expiration", expirationTime);
+        // console.log("current time", currentTime);
 
         if (data?.Candidate?.[0]?.is_link_used === true) {
           navigate("/error");
-          console.log("this is called", data?.Candidate?.[0]?.link_expiration);
+          // console.log("this is called", data?.Candidate?.[0]?.link_expiration);
         }
 
         if (currentTime > expirationTime) {
@@ -154,7 +160,7 @@ const QuestionsPage = () => {
         }
       },
       onError: (error) => {
-        console.log("something went wrong");
+        // console.log("something went wrong");
       },
     }
   );
@@ -163,7 +169,7 @@ const QuestionsPage = () => {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
       elem.requestFullscreen().catch((err) => {
-        console.error("Error enabling fullscreen mode:", err);
+        // console.error("Error enabling fullscreen mode:", err);
       });
     } else if (elem.mozRequestFullScreen) {
       elem.mozRequestFullScreen();
@@ -191,12 +197,12 @@ const QuestionsPage = () => {
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
     document.addEventListener("msfullscreenchange", handleFullscreenChange);
-    // document.addEventListener("contextmenu", disableRightClick);
+    document.addEventListener("contextmenu", disableRightClick);
 
     return () => {
       // Clean up event listeners
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      // document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener("contextmenu", disableRightClick);
       document.removeEventListener(
         "webkitfullscreenchange",
         handleFullscreenChange
@@ -248,7 +254,7 @@ const QuestionsPage = () => {
       },
     });
 
-    navigate('/complete');
+    navigate("/complete");
   };
 
   const startListening = () => {
@@ -331,7 +337,7 @@ const QuestionsPage = () => {
         setShowEndAndReview(true);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setErrorMsg("Internal Server Error, Please Click on Submit Once Again");
     }
   };

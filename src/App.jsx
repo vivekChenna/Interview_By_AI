@@ -17,9 +17,6 @@ function App() {
         <ContextProvider>
           <Header />
           <Routes>
-            {/* <Route path="/" element={<Home />} /> */}
-            {/* <Route path="/" element={<JobDetails />} /> */}
-            {/* <Route path="/questions" element={<QuestionsPage />} /> */}
             <Route path="/error" element={<ErrorPage />} />
             <Route path="/interview/:userName/:jobRole/:uniqueId" element={<QuestionsPage/>} />
             <Route path="/complete" element={<InterviewComplete />} />

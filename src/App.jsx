@@ -18,7 +18,10 @@ function App() {
           <Header />
           <Routes>
             <Route path="/error" element={<ErrorPage />} />
-            <Route path="/interview/:userName/:jobRole/:uniqueId" element={<QuestionsPage/>} />
+            <Route
+              path="/interview/:userName/:jobRole/:uniqueId"
+              element={<QuestionsPage />}
+            />
             <Route path="/complete" element={<InterviewComplete />} />
           </Routes>
         </ContextProvider>

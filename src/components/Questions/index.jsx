@@ -1,10 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "regenerator-runtime/runtime";
 import { Context } from "../../context/context";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
 import { BsFillMicFill } from "react-icons/bs";
 import { FaPause } from "react-icons/fa";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -22,6 +19,7 @@ import {
   Product_Management_Intern,
   UX_and_Interaction_Designer_Intern,
 } from "../../constants/JobDescription";
+import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
 
 const QuestionsPage = () => {
   const { userName, jobRole, uniqueId } = useParams();
@@ -32,6 +30,8 @@ const QuestionsPage = () => {
   const [index, setIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [interimTranscript, setInterimTranscript] = useState("");
   const [showSubmitBtn, setShowSubmitBtn] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
@@ -41,9 +41,11 @@ const QuestionsPage = () => {
   const [savedTranscript, setSavedTranscript] = useState([]);
   const [isQuestionAndAnswerSaved, setIsQuestionAndAnswerSaved] =
     useState(false);
-  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
   const [loading, setLoading] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const deepgramRef = useRef(null);
+  const timerRef = useRef(null);
 
   const {
     data,
@@ -78,10 +80,66 @@ const QuestionsPage = () => {
           navigate("/error");
         }
       },
-      onError: (error) => {
-      },
+      onError: (error) => {},
     }
   );
+
+  useEffect(() => {
+    const initDeepgram = async () => {
+      try {
+        const deepgramClient = createClient(
+          import.meta.env.VITE_DEEPGRAM_API_KEY
+        );
+
+        const connection = deepgramClient.listen.live({
+          model: "nova-2",
+          smart_format: true,
+          language: "en",
+          punctuate: true,
+          interim_results: true,
+        });
+
+        connection.addListener(LiveTranscriptionEvents.Open, () => {
+          // console.log("Connection opened");
+        });
+
+        connection.addListener(LiveTranscriptionEvents.Error, (error) => {
+          // console.error("Deepgram error:", error);
+        });
+
+        connection.addListener(LiveTranscriptionEvents.Transcript, (data) => {
+          const transcription = data.channel.alternatives[0];
+
+          // console.log("Transcript received:", transcription);
+
+          if (transcription.transcript) {
+            if (data.is_final) {
+              setTranscript(
+                (prev) =>
+                  prev + (prev ? " " : "") + transcription.transcript.trim()
+              );
+              setInterimTranscript("");
+            } else {
+              setInterimTranscript(transcription.transcript.trim());
+            }
+          }
+        });
+
+        deepgramRef.current = connection;
+      } catch (error) {
+        // console.error("Error initializing Deepgram:", error);
+      }
+    };
+
+    initDeepgram();
+
+    return () => {
+      if (deepgramRef.current) {
+        deepgramRef.current.finish();
+        deepgramRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -103,7 +161,6 @@ const QuestionsPage = () => {
         );
         setQuestions(data);
       } catch (error) {
-    
       } finally {
         setLoading(false);
       }
@@ -112,7 +169,6 @@ const QuestionsPage = () => {
     fetchQuestions();
   }, []);
 
- 
   const [saveQuestionAndAnswer] = useMutation(gql`
     mutation SaveQuestionAndAnswer(
       $candidateId: uuid!
@@ -154,15 +210,75 @@ const QuestionsPage = () => {
       }
     }
   `);
+  const startListening = async () => {
+    try {
+      if (!deepgramRef.current) {
+        throw new Error("Deepgram connection not initialized");
+      }
 
- 
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm",
+      });
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0 && deepgramRef.current) {
+          deepgramRef.current.send(event.data);
+        }
+      };
+      recorder.start(250);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      setTranscript("");
+      setInterimTranscript("");
+    } catch (error) {
+      // console.error("Error accessing microphone:", error);
+    }
+  };
+
+  const stopListening = () => {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
+      mediaRecorderRef.current.stop();
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
+      setInterimTranscript("");
+    }
+    setIsRecording(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  };
+
+  useEffect(() => {
+    if (index !== 0) {
+      setIsRecording(true);
+    }
+  }, [index]);
+
+  useEffect(() => {
+    return () => {
+      stopListening(); // Stop recording
+      if (deepgramRef.current) {
+        deepgramRef.current.finish(); // Properly close the connection
+        deepgramRef.current = null;
+      }
+    };
+  }, []);
 
   const enableFullScreen = () => {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-      elem.requestFullscreen().catch((err) => {
-
-      });
+      elem.requestFullscreen().catch((err) => {});
     } else if (elem.mozRequestFullScreen) {
       elem.mozRequestFullScreen();
     } else if (elem.webkitRequestFullscreen) {
@@ -222,12 +338,9 @@ const QuestionsPage = () => {
     };
   }, []);
 
-  if (!browserSupportsSpeechRecognition) {
-    return <p> your browser does not support speech recognition</p>;
-  }
-
   const handleNextQuestion = () => {
     if (index < questions.length - 1) {
+      // stopListening();
       setIndex(index + 1);
 
       HandleRestart();
@@ -246,45 +359,30 @@ const QuestionsPage = () => {
     navigate("/complete");
   };
 
-  const startListening = () => {
-    SpeechRecognition.startListening({ continuous: true, language: "en-US" });
-  };
-
-  const stopListening = () => {
-    SpeechRecognition.stopListening();
-  };
-
   const HandleRestart = () => {
     setIsRecording(false);
     setTimeLeft(0);
+    setTranscript("");
     setShowSubmitBtn(false);
-    resetTranscript();
     setShowNextQuestionBtn(false);
   };
 
   useEffect(() => {
-    let timer = null;
-
     if (isRecording) {
-      timer = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime < 120) {
-            return prevTime + 1;
-          } else {
-            setIsRecording(false);
-            stopListening();
-            setShowSubmitBtn(true);
-            return 120;
-          }
-        });
+      const startTime = Date.now();
+      timerRef.current = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        if (elapsed >= 120) {
+          setIsRecording(false);
+          setShowSubmitBtn(true);
+          setTimeLeft(120);
+        } else {
+          setTimeLeft(elapsed);
+        }
       }, 1000);
-    } else {
-      clearInterval(timer);
     }
 
-    return () => {
-      clearInterval(timer);
-    };
+    return () => clearInterval(timerRef.current);
   }, [isRecording]);
 
   const formatTime = (seconds) => {
@@ -345,6 +443,7 @@ const QuestionsPage = () => {
             id: uniqueId,
           },
         });
+        await startListening();
         SetIsInterviewStarted(false);
         setStartInterview(true);
         enableFullScreen();
@@ -366,7 +465,7 @@ const QuestionsPage = () => {
       <div className="flex flex-col items-center justify-center w-full">
         <div className=" md:w-1/2 w-11/12 min-h-80 rounded-2xl p-4 shadow-md border border-gray-300">
           <div>
-            <p className=" text-black md:text-2xl text-lg text-center font-semibold">
+            <p className=" text-black md:text-2xl text-lg text-center font-semibold select-none">
               {questions[index]?.question}
             </p>
           </div>
@@ -382,7 +481,6 @@ const QuestionsPage = () => {
               onClick={() => {
                 setIsRecording(false);
                 setShowSubmitBtn(true);
-                stopListening();
               }}
             >
               <div className=" border bg-red-600 p-4 flex items-center justify-center w-max rounded-full">
@@ -391,22 +489,23 @@ const QuestionsPage = () => {
             </div>
           )}
 
-          {!isRecording &&
+          {/* {!isRecording &&
             !showSubmitBtn &&
             !showNextQuestionBtn &&
-            !showEndAndReview && (
+            !showEndAndReview &&
+            index === 0 && (
               <div
                 className=" w-full flex items-center justify-center mt-7 cursor-pointer"
-                onClick={() => {
+                onClick={ () => {
+                
                   setIsRecording(true);
-                  startListening();
                 }}
               >
                 <div className=" border bg-red-600 p-4 flex items-center justify-center w-max rounded-full">
                   <BsFillMicFill color="white" fontSize="2rem" />
                 </div>
               </div>
-            )}
+            )} */}
 
           <p className="text-center">{transcript}</p>
 
@@ -435,7 +534,7 @@ const QuestionsPage = () => {
           {showEndAndReview && (
             <div className=" w-full flex items-center justify-center">
               <button
-                className=" border rounded-3xl px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-[16px] flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
+                className=" border rounded-2xl px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-xl flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
                 onClick={() => reviewInterviewer()}
                 disabled={loading}
               >

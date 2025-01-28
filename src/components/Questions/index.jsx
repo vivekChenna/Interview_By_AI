@@ -25,10 +25,7 @@ import {
 
 const QuestionsPage = () => {
   const { userName, jobRole, uniqueId } = useParams();
-  // console.log("job role", jobRole);
-
   const navigate = useNavigate();
-  // console.log("unique id", uniqueId);
 
   const { questions, jobDescription, setQuestions } = useContext(Context);
   const [startInterview, setStartInterview] = useState(false);
@@ -41,6 +38,12 @@ const QuestionsPage = () => {
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isInterviewStarted, SetIsInterviewStarted] = useState(false);
+  const [savedTranscript, setSavedTranscript] = useState([]);
+  const [isQuestionAndAnswerSaved, setIsQuestionAndAnswerSaved] =
+    useState(false);
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
+  const [loading, setLoading] = useState(false);
 
   const {
     data,
@@ -64,18 +67,11 @@ const QuestionsPage = () => {
         id: uniqueId,
       },
       onCompleted: (data) => {
-        // console.log(data);
-
-        // console.log("date and time", data?.Candidate?.[0]?.link_expiration);
         const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
         const currentTime = new Date();
 
-        // console.log("expiration", expirationTime);
-        // console.log("current time", currentTime);
-
         if (data?.Candidate?.[0]?.is_link_used === true) {
           navigate("/error");
-          // console.log("this is called", data?.Candidate?.[0]?.link_expiration);
         }
 
         if (currentTime > expirationTime) {
@@ -83,7 +79,6 @@ const QuestionsPage = () => {
         }
       },
       onError: (error) => {
-        // console.log("something went wrong");
       },
     }
   );
@@ -108,7 +103,7 @@ const QuestionsPage = () => {
         );
         setQuestions(data);
       } catch (error) {
-        // console.log("Failed to fetch questions. Please try again.");
+    
       } finally {
         setLoading(false);
       }
@@ -117,12 +112,7 @@ const QuestionsPage = () => {
     fetchQuestions();
   }, []);
 
-  const [savedTranscript, setSavedTranscript] = useState([]);
-  const [isQuestionAndAnswerSaved, setIsQuestionAndAnswerSaved] =
-    useState(false);
-  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
-  const [loading, setLoading] = useState(false);
+ 
   const [saveQuestionAndAnswer] = useMutation(gql`
     mutation SaveQuestionAndAnswer(
       $candidateId: uuid!
@@ -171,7 +161,7 @@ const QuestionsPage = () => {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
       elem.requestFullscreen().catch((err) => {
-        // console.error("Error enabling fullscreen mode:", err);
+
       });
     } else if (elem.mozRequestFullScreen) {
       elem.mozRequestFullScreen();
@@ -183,7 +173,7 @@ const QuestionsPage = () => {
   };
 
   useEffect(() => {
-    enableFullScreen(); // Enable fullscreen when the page loads
+    enableFullScreen();
 
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
@@ -193,8 +183,6 @@ const QuestionsPage = () => {
     };
 
     const disableRightClick = (e) => e.preventDefault();
-
-    // Add event listeners for fullscreen changes
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
@@ -202,7 +190,6 @@ const QuestionsPage = () => {
     document.addEventListener("contextmenu", disableRightClick);
 
     return () => {
-      // Clean up event listeners
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("contextmenu", disableRightClick);
       document.removeEventListener(

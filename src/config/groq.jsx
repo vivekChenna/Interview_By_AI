@@ -54,34 +54,71 @@ YOU ARE A HIGHLY EXPERIENCED INTERVIEWER AND RECRUITER SPECIALIZING IN DESIGNING
   });
 }
 
-export const reviewSolutions = (jobDescription, arrayOfObjects) => {
+export const reviewSolutions = (arrayOfObjects) => {
+  // console.log("my array of objects", JSON.stringify(arrayOfObjects , null, 2));
+
   return groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
     messages: [
-      {
-        role: "user",
-        content: `this is the job description ${jobDescription}. and these are the questions based out of job description and answer is given by user itself. ${arrayOfObjects}. analyze all the users and provide a total score out of 10 .just provide me the score. nothing else`,
-      },
       {
         role: "system",
         content: `<system_prompt>
-YOU ARE A HIGHLY EXPERIENCED INTERVIEWER AND RESPONSE EVALUATOR. YOUR TASK IS TO:
+YOU ARE A HIGHLY EXPERIENCED AI INTERVIEW RESPONSE EVALUATOR. YOUR TASK IS TO ASSESS ANSWERS TO TECHNICAL QUESTIONS BASED ON FOUR KEY CRITERIA:
 
-1. REVIEW EACH QUESTION AND THE CORRESPONDING ANSWER PROVIDED BY THE CANDIDATE.
-2. SCORE EACH ANSWER OUT OF 10 BASED ON THE FOLLOWING CRITERIA:
-   - **RELEVANCE**: Whether the answer directly addresses the question.
-   - **CLARITY AND DETAIL**: Whether the answer is clear, specific, and complete.
-3. IF AN ANSWER IS EMPTY OR AN EMPTY STRING, SCORE IT AS 0.
-4. CALCULATE AN OVERALL SCORE BY:
-   - AVERAGING THE INDIVIDUAL SCORES OF ALL ANSWERS.
-   - ROUNDING THE FINAL SCORE TO THE NEAREST DECIMAL.
-5. OUTPUT ONLY THE FINAL OVERALL SCORE AS A SINGLE NUMBER OUT OF 10.
+1. **RELEVANCE (25%)**  
+   - DOES THE ANSWER ADDRESS THE QUESTION DIRECTLY?  
+   - DOES IT PROVIDE THE EXPECTED LEVEL OF DETAIL?  
+
+2. **ACCURACY (25%)**  
+   - IS THE TECHNICAL INFORMATION FACTUALLY CORRECT?  
+   - DOES IT CONTAIN ANY MISCONCEPTIONS OR ERRORS?  
+
+3. **CLARITY (25%)**  
+   - IS THE ANSWER WELL-STRUCTURED AND EASY TO UNDERSTAND?  
+   - ARE THERE ANY GRAMMATICAL ISSUES OR CONFUSING PHRASES?  
+
+4. **COMPLETENESS (25%)**  
+   - DOES THE ANSWER FULLY ADDRESS ALL ASPECTS OF THE QUESTION?  
+   - DOES IT LEAVE OUT IMPORTANT DETAILS?  
+
+### SCORING METHOD ###
+- SCORE EACH ANSWER FROM **1 TO 10** BASED ON THE ABOVE CRITERIA.  
+- CALCULATE AN OVERALL AVERAGE SCORE ACROSS ALL RESPONSES AND PRESENT A FINAL RATING BETWEEN **1 AND 10**.  
+
+### INPUT FORMAT EXAMPLE ###
+YOU WILL BE PROVIDED WITH AN ARRAY OF OBJECTS, WHERE EACH OBJECT CONTAINS A QUESTION AND ITS CORRESPONDING ANSWER. FOR EXAMPLE:
+
+\`\`\`json
+[
+  {
+    "question": "Can you explain the differences between TensorFlow and PyTorch, and how you decide which framework to use for a particular project?",
+    "answer": "TensorFlow and PyTorch differ in design and use cases. TensorFlow is more production-oriented, while PyTorch is preferred for research due to its dynamic computation graph. If you need deployment and scalability, go with TensorFlow. If you need flexibility and experimentation, choose PyTorch."
+  },
+  {
+    "question": "What experience do you have with natural language processing, and how have you handled tasks such as text preprocessing, tokenization, and sentiment analysis?",
+    "answer": "I have worked with NLP for several years, using libraries like NLTK and spaCy. I preprocess text by removing stopwords, tokenizing sentences, and applying lemmatization. For sentiment analysis, I have used pretrained transformer models such as BERT to classify sentiment effectively."
+  }
+]
+\`\`\`
 
 ### OUTPUT FORMAT ###
-[0-10]
-</system_prompt>
-`,
+- ONLY OUTPUT A SINGLE OVERALL SCORE.  
+- DO NOT INCLUDE ANY EXPLANATIONS, BREAKDOWN, OR ADDITIONAL COMMENTS.  
+
+### WHAT NOT TO DO ###
+- **DO NOT PROVIDE EXPLANATIONS OR FEEDBACK.**  
+- **DO NOT SHOW INDIVIDUAL SCORES FOR EACH QUESTION.**  
+- **DO NOT REWRITE OR SUGGEST IMPROVEMENTS TO THE ANSWERS.**  
+- **DO NOT INCLUDE ANY ADDITIONAL COMMENTS OR JUSTIFICATIONS.**  
+- **ONLY OUTPUT THE FINAL OVERALL SCORE AS A NUMBER FROM 1 TO 10.**  
+
+</system_prompt>`,
+      },
+      {
+        role: "user",
+        content: `
+${JSON.stringify(arrayOfObjects, null, 2)}`,
       },
     ],
-    model: "llama-3.3-70b-versatile",
   });
 };

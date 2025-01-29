@@ -347,7 +347,7 @@ const QuestionsPage = () => {
 
   const reviewInterviewer = async () => {
     setLoading(true);
-    const data = await reviewSolutions(jobDescription, savedTranscript);
+    const data = await reviewSolutions(savedTranscript);
     await updateUserScore({
       variables: {
         id: uniqueId,

@@ -161,8 +161,6 @@ const QuestionsPage = () => {
         );
         setQuestions(data);
       } catch (error) {
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -348,6 +346,7 @@ const QuestionsPage = () => {
   };
 
   const reviewInterviewer = async () => {
+    setLoading(true);
     const data = await reviewSolutions(jobDescription, savedTranscript);
     await updateUserScore({
       variables: {
@@ -355,7 +354,7 @@ const QuestionsPage = () => {
         user_score: data?.choices[0]?.message?.content,
       },
     });
-
+    setLoading(false);
     navigate("/complete");
   };
 
@@ -508,12 +507,17 @@ const QuestionsPage = () => {
             )} */}
 
           <p className="text-center">{transcript}</p>
+          {interimTranscript && (
+            <p className="text-gray-500 italic mt-7 text-center">
+              {interimTranscript}
+            </p>
+          )}
 
           {showSubmitBtn && (
             <div className=" w-full flex items-center justify-center mt-8 gap-4">
               <button
                 disabled={isQuestionAndAnswerSaved}
-                className=" md:px-5 px-3 md:py-[6px] py-[3px] font-semibold rounded-2xl text-white bg-blue-950 shadow-md "
+                className=" md:px-5 px-4 md:py-[8px] py-[3px] font-semibold rounded-lg text-white bg-blue-950 shadow-md text-lg "
                 onClick={() => SubmitHandler()}
               >
                 {isQuestionAndAnswerSaved ? "Saving..." : " Save"}
@@ -524,7 +528,7 @@ const QuestionsPage = () => {
           {showNextQuestionBtn ? (
             <div className=" w-full flex items-center justify-center mt-6">
               <button
-                className=" w-max md:px-5 px-4 py-1 drop-shadow-md rounded-3xl text-lg scale-95 hover:scale-100 transition-all duration-300 bg-blue-950 text-white shadow-md"
+                className=" w-max md:px-5 px-4 py-2 drop-shadow-md rounded-lg text-lg scale-95 hover:scale-100 transition-all duration-300 bg-blue-950 text-white shadow-md"
                 onClick={handleNextQuestion}
               >
                 Next Question
@@ -534,11 +538,11 @@ const QuestionsPage = () => {
           {showEndAndReview && (
             <div className=" w-full flex items-center justify-center">
               <button
-                className=" border rounded-2xl px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-xl flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
+                className=" border-2 rounded-lg px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-xl flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
                 onClick={() => reviewInterviewer()}
                 disabled={loading}
               >
-                End Interview
+                {loading ? "Redirecting you..." : "End Interview"}
               </button>
             </div>
           )}

@@ -20,7 +20,6 @@ import {
   UX_and_Interaction_Designer_Intern,
 } from "../../constants/JobDescription";
 import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
-import { sendMail } from "../../utils/mail";
 
 const QuestionsPage = () => {
   const { userName, jobRole, uniqueId } = useParams();

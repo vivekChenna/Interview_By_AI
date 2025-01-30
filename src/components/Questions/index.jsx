@@ -47,43 +47,6 @@ const QuestionsPage = () => {
   const deepgramRef = useRef(null);
   const timerRef = useRef(null);
 
-  const {
-    data,
-    error,
-    loading: waiting,
-  } = useQuery(
-    gql`
-      query getCandidate($id: uuid!) {
-        Candidate(where: { id: { _eq: $id } }) {
-          id
-          name
-          email
-          job_role
-          link_expiration
-          is_link_used
-        }
-      }
-    `,
-    {
-      variables: {
-        id: uniqueId,
-      },
-      onCompleted: (data) => {
-        const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
-        const currentTime = new Date();
-
-        if (data?.Candidate?.[0]?.is_link_used === true) {
-          navigate("/error");
-        }
-
-        if (currentTime > expirationTime) {
-          navigate("/error");
-        }
-      },
-      onError: (error) => {},
-    }
-  );
-
   useEffect(() => {
     const initDeepgram = async () => {
       try {
@@ -166,6 +129,64 @@ const QuestionsPage = () => {
 
     fetchQuestions();
   }, []);
+
+  useEffect(() => {
+    if (isRecording) {
+      const startTime = Date.now();
+      timerRef.current = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        if (elapsed >= 120) {
+          setIsRecording(false);
+          setShowSubmitBtn(true);
+          setTimeLeft(120);
+        } else {
+          setTimeLeft(elapsed);
+        }
+      }, 1000);
+    }
+
+    return () => clearInterval(timerRef.current);
+  }, [isRecording]);
+
+  const {
+    data,
+    error,
+    loading: waiting,
+  } = useQuery(
+    gql`
+      query getCandidate($id: uuid!) {
+        Candidate(where: { id: { _eq: $id } }) {
+          id
+          name
+          email
+          job_role
+          link_expiration
+          is_link_used
+        }
+      }
+    `,
+    {
+      variables: {
+        id: uniqueId,
+      },
+      onCompleted: (data) => {
+        const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
+        const currentTime = new Date();
+
+        if (data?.Candidate?.[0]?.is_link_used === true) {
+          navigate("/error");
+        }
+
+        if (currentTime > expirationTime) {
+          navigate("/error");
+        }
+      },
+      onError: (error) => {},
+    }
+  );
+
+  
+
 
   const [saveQuestionAndAnswer] = useMutation(gql`
     mutation SaveQuestionAndAnswer(
@@ -366,23 +387,7 @@ const QuestionsPage = () => {
     setShowNextQuestionBtn(false);
   };
 
-  useEffect(() => {
-    if (isRecording) {
-      const startTime = Date.now();
-      timerRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        if (elapsed >= 120) {
-          setIsRecording(false);
-          setShowSubmitBtn(true);
-          setTimeLeft(120);
-        } else {
-          setTimeLeft(elapsed);
-        }
-      }, 1000);
-    }
 
-    return () => clearInterval(timerRef.current);
-  }, [isRecording]);
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -437,12 +442,12 @@ const QuestionsPage = () => {
       isInterviewStarted={isInterviewStarted}
       setStartInterview={async () => {
         SetIsInterviewStarted(true);
+        await startListening();
         await updateLinkUsed({
           variables: {
             id: uniqueId,
           },
         });
-        await startListening();
         SetIsInterviewStarted(false);
         setStartInterview(true);
         enableFullScreen();

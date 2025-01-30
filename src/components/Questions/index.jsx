@@ -47,8 +47,7 @@ const QuestionsPage = () => {
     useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isRedirected , SetIsRedirected] = useState(false);
- 
+  const [isRedirected, SetIsRedirected] = useState(false);
 
   useEffect(() => {
     const initDeepgram = async () => {
@@ -370,16 +369,32 @@ const QuestionsPage = () => {
     try {
       setLoading(true);
       const data = await reviewSolutions(savedTranscript);
+      const score = data?.choices[0]?.message?.content;
       await updateUserScore({
         variables: {
           id: uniqueId,
-          user_score: data?.choices[0]?.message?.content,
+          user_score: score,
         },
       });
       setLoading(false);
-      const score = data?.choices[0]?.message?.content;
       SetIsRedirected(true);
-      await sendMail(userDetails, score);
+      const response = await fetch(
+        "https://app19.serverless.andaihub.com/sendMail",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...userDetails, score: score }),
+        }
+      );
+      const result = await response.json();
+      if (response.ok) {
+        console.log("Email sent successfully:", result);
+      } else {
+        console.error("Error sending email:", result?.error);
+      }
+
       SetIsRedirected(false);
       navigate("/complete");
     } catch (error) {
@@ -551,9 +566,13 @@ const QuestionsPage = () => {
               <button
                 className=" border-2 rounded-lg px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-xl flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
                 onClick={() => reviewInterviewer()}
-                disabled={loading|| isRedirected}
+                disabled={loading || isRedirected}
               >
-                {loading ? "Evaluating your responses..." : isRedirected ? "Redirecting you..." : "End Interview"}
+                {loading
+                  ? "Evaluating your responses..."
+                  : isRedirected
+                  ? "Redirecting you..."
+                  : "End Interview"}
               </button>
             </div>
           )}

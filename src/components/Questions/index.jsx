@@ -20,11 +20,15 @@ import {
   UX_and_Interaction_Designer_Intern,
 } from "../../constants/JobDescription";
 import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
+import { sendMail } from "../../utils/mail";
 
 const QuestionsPage = () => {
   const { userName, jobRole, uniqueId } = useParams();
   const navigate = useNavigate();
-
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const deepgramRef = useRef(null);
+  const timerRef = useRef(null);
   const { questions, jobDescription, setQuestions } = useContext(Context);
   const [startInterview, setStartInterview] = useState(false);
   const [index, setIndex] = useState(0);
@@ -41,11 +45,10 @@ const QuestionsPage = () => {
   const [savedTranscript, setSavedTranscript] = useState([]);
   const [isQuestionAndAnswerSaved, setIsQuestionAndAnswerSaved] =
     useState(false);
+  const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const streamRef = useRef(null);
-  const deepgramRef = useRef(null);
-  const timerRef = useRef(null);
+  const [isRedirected , SetIsRedirected] = useState(false);
+ 
 
   useEffect(() => {
     const initDeepgram = async () => {
@@ -63,7 +66,7 @@ const QuestionsPage = () => {
         });
 
         connection.addListener(LiveTranscriptionEvents.Open, () => {
-          // console.log("Connection opened");
+          console.log("Connection opened");
         });
 
         connection.addListener(LiveTranscriptionEvents.Error, (error) => {
@@ -123,8 +126,7 @@ const QuestionsPage = () => {
             : ""
         );
         setQuestions(data);
-      } catch (error) {
-      }
+      } catch (error) {}
     };
 
     fetchQuestions();
@@ -171,6 +173,7 @@ const QuestionsPage = () => {
       },
       onCompleted: (data) => {
         const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
+        setUserDetails(data?.Candidate?.[0]);
         const currentTime = new Date();
 
         if (data?.Candidate?.[0]?.is_link_used === true) {
@@ -184,9 +187,6 @@ const QuestionsPage = () => {
       onError: (error) => {},
     }
   );
-
-  
-
 
   const [saveQuestionAndAnswer] = useMutation(gql`
     mutation SaveQuestionAndAnswer(
@@ -367,16 +367,24 @@ const QuestionsPage = () => {
   };
 
   const reviewInterviewer = async () => {
-    setLoading(true);
-    const data = await reviewSolutions(savedTranscript);
-    await updateUserScore({
-      variables: {
-        id: uniqueId,
-        user_score: data?.choices[0]?.message?.content,
-      },
-    });
-    setLoading(false);
-    navigate("/complete");
+    try {
+      setLoading(true);
+      const data = await reviewSolutions(savedTranscript);
+      await updateUserScore({
+        variables: {
+          id: uniqueId,
+          user_score: data?.choices[0]?.message?.content,
+        },
+      });
+      setLoading(false);
+      const score = data?.choices[0]?.message?.content;
+      SetIsRedirected(true);
+      await sendMail(userDetails, score);
+      SetIsRedirected(false);
+      navigate("/complete");
+    } catch (error) {
+      console.log("error", error);
+    }
   };
 
   const HandleRestart = () => {
@@ -386,8 +394,6 @@ const QuestionsPage = () => {
     setShowSubmitBtn(false);
     setShowNextQuestionBtn(false);
   };
-
-
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -545,9 +551,9 @@ const QuestionsPage = () => {
               <button
                 className=" border-2 rounded-lg px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-xl flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
                 onClick={() => reviewInterviewer()}
-                disabled={loading}
+                disabled={loading|| isRedirected}
               >
-                {loading ? "Redirecting you..." : "End Interview"}
+                {loading ? "Evaluating your responses..." : isRedirected ? "Redirecting you..." : "End Interview"}
               </button>
             </div>
           )}

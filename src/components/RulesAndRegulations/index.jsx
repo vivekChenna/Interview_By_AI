@@ -3,14 +3,16 @@ import React from "react";
 function RulesAndRegulations({ setStartInterview , isInterviewStarted }) {
   const rules = [
     "Allow microphone access to record your responses. Without it, your interview responses cannot be captured, and the session will be invalid.",
-    "Right-clicking and inspecting the webpage are strictly prohibited.",
+    "No other tab except the interview tab should access the microphone. Otherwise, you will not be able to record your responses, and your interview session will be invalid.",
+    "Do not switch tabs or minimize the browser during the interview. Any tab switching will result in warnings or disqualification.",
     "Avoid using any external devices, tools, or assistance during the interview.",
     "Complete all questions within the allotted time. The session will expire after the time limit.",
     "Focus on the interview tab. Any distractions or interruptions may result in termination.",
     "Unauthorized assistance or plagiarism will result in immediate disqualification.",
     "Stay in full-screen mode throughout the interview. Exiting full-screen mode will terminate the session.",
-    "Do not switch tabs or minimize the browser during the interview. Any tab switching will result in warnings or disqualification.",
+    "Right-clicking and inspecting the webpage are strictly prohibited.",
   ];
+  
 
   return (
     <div className="flex flex-col items-center justify-center h-full">

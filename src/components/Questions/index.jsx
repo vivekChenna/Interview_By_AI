@@ -36,7 +36,6 @@ const QuestionsPage = () => {
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [showSubmitBtn, setShowSubmitBtn] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -405,6 +404,7 @@ const QuestionsPage = () => {
     setIsRecording(false);
     setTimeLeft(0);
     setTranscript("");
+    setInterimTranscript("");
     setShowSubmitBtn(false);
     setShowNextQuestionBtn(false);
   };
@@ -451,10 +451,6 @@ const QuestionsPage = () => {
       // console.log(error);
       setErrorMsg("Internal Server Error, Please Click on Submit Once Again");
     }
-  };
-
-  const ModalFunc = () => {
-    setShowModal(false);
   };
 
   return !startInterview ? (
@@ -581,8 +577,6 @@ const QuestionsPage = () => {
       <div className=" flex items-center justify-center mx-6 mb-2">
         <p className=" text-red-600 ">{errorMsg}</p>
       </div>
-
-      {showModal ? <Modal ModalFunc={ModalFunc} /> : null}
     </div>
   );
 };

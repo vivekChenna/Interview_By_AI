@@ -2,6 +2,7 @@ import React from "react";
 
 function RulesAndRegulations({ setStartInterview , isInterviewStarted }) {
   const rules = [
+    "Allow microphone access to record your responses. Without it, your interview responses cannot be captured, and the session will be invalid.",
     "Right-clicking and inspecting the webpage are strictly prohibited.",
     "Avoid using any external devices, tools, or assistance during the interview.",
     "Complete all questions within the allotted time. The session will expire after the time limit.",
@@ -17,6 +18,9 @@ function RulesAndRegulations({ setStartInterview , isInterviewStarted }) {
         <h2 className="text-2xl font-bold text-gray-800">
           Rules and Regulations
         </h2>
+        <p className="text-gray-600 mt-2 text-sm">
+          Please read the following rules carefully before starting the interview.
+        </p>
       </div>
       <div className="md:w-1/2 w-11/12 min-h-80 rounded-2xl p-4 shadow-md border border-gray-300">
         <ul className=" list-disc list-inside text-gray-700">

@@ -3,12 +3,12 @@ import { Routes, Route } from "react-router-dom";
 import { ApolloProvider } from "@apollo/client";
 import client from "./config/graphql-client";
 import Header from "./components/Header";
-import Home from "./components/Home";
-import JobDetails from "./components/JobDetails/JobDetails";
 import QuestionsPage from "./components/Questions";
 import ContextProvider from "./context/context";
 import ErrorPage from "./components/ErrorPage/ErrorPage";
 import InterviewComplete from "./components/InterviewComplete/index.jsx";
+import AudioDemo from "./components/AudioDemo/index.jsx";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
@@ -18,12 +18,15 @@ function App() {
           <Header />
           <Routes>
             <Route path="/error" element={<ErrorPage />} />
+            <Route path="/" element={<AudioDemo />} />
+
             <Route
               path="/interview/:userName/:jobRole/:uniqueId"
               element={<QuestionsPage />}
             />
             <Route path="/complete" element={<InterviewComplete />} />
           </Routes>
+          <Toaster />
         </ContextProvider>
       </BrowserRouter>
     </ApolloProvider>

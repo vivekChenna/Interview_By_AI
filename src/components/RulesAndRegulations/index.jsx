@@ -10,13 +10,12 @@ function RulesAndRegulations({ setStartInterview , isInterviewStarted }) {
     "Focus on the interview tab. Any distractions or interruptions may result in termination.",
     "Unauthorized assistance or plagiarism will result in immediate disqualification.",
     "Stay in full-screen mode throughout the interview. Exiting full-screen mode will terminate the session.",
-    "Right-clicking and inspecting the webpage are strictly prohibited.",
   ];
   
 
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <div className="w-1/2 flex items-center md:flex-row flex-col md:gap-0 gap-5 justify-between mb-8">
+      <div className="w-1/2 flex items-center flex-col md:gap-0 gap-5 justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-800">
           Rules and Regulations
         </h2>
@@ -38,7 +37,7 @@ function RulesAndRegulations({ setStartInterview , isInterviewStarted }) {
         onClick={() => setStartInterview()}
         className=" mt-5 bg-black/90 py-2 px-4 text-white rounded-md active:scale-90 font-medium"
       >
-       {isInterviewStarted ? "Loading..." : " Start Interview"}
+       {isInterviewStarted ? "Loading..." : " Take a Demo Audio Test"}
       </button>
     </div>
   );

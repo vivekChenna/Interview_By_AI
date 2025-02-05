@@ -14,6 +14,7 @@ const AudioDemo = ({
   webcamRef,
   startVideoRecording,
   startCandidateInterview,
+  muteCandidate,
 }) => {
   const demoQuestion =
     "Can you describe a challenging situation you faced at work and how you handled it?";
@@ -42,6 +43,7 @@ const AudioDemo = ({
 
   const handlePause = () => {
     setIsRunning(false);
+    muteCandidate();
   };
 
   const handleSubmit = async (event) => {

@@ -500,8 +500,10 @@ const QuestionsPage = () => {
         setStartInterview(true);
         setTranscript("");
         setInterimTranscript("");
+        unMuteCandidate();
         setIsRecording(true);
       }}
+      muteCandidate={muteCandidate}
       startVideoRecording={() => startVideoRecording()}
       transcript={transcript}
       webcamRef={webcamRef}

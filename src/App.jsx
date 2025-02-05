@@ -7,7 +7,6 @@ import QuestionsPage from "./components/Questions";
 import ContextProvider from "./context/context";
 import ErrorPage from "./components/ErrorPage/ErrorPage";
 import InterviewComplete from "./components/InterviewComplete/index.jsx";
-import AudioDemo from "./components/AudioDemo/index.jsx";
 import { Toaster } from "react-hot-toast";
 
 function App() {
@@ -18,8 +17,6 @@ function App() {
           <Header />
           <Routes>
             <Route path="/error" element={<ErrorPage />} />
-            <Route path="/" element={<AudioDemo />} />
-
             <Route
               path="/interview/:userName/:jobRole/:uniqueId"
               element={<QuestionsPage />}

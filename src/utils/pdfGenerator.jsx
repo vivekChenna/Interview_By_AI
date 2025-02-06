@@ -188,6 +188,17 @@ export const generateReportPdf = async (
       continue;
     }
 
+    if (line === "Detailed Evaluation of Responses:") {
+      y -= 30; // Add extra space before this section
+      page.drawText(line, {
+        x: margin,
+        y,
+        ...styles.subheading,
+      });
+      y -= 25;
+      continue;
+    }
+
     // Modified styling logic to handle bold titles
     let styleToUse = styles.normal;
     let extraSpacing = 20;

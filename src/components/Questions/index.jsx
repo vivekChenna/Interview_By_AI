@@ -45,7 +45,7 @@ const QuestionsPage = () => {
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [showSubmitBtn, setShowSubmitBtn] = useState(true);
-  const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
+  // const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isInterviewStarted, SetIsInterviewStarted] = useState(false);
@@ -431,7 +431,7 @@ const QuestionsPage = () => {
     setTimeLeft(0);
     setTranscript("");
     setInterimTranscript("");
-    setShowNextQuestionBtn(false);
+    // setShowNextQuestionBtn(false);
     setShowSkipButton(true);
     setShowSubmitBtn(true);
   };
@@ -455,13 +455,13 @@ const QuestionsPage = () => {
           answer: transcript,
         },
       ]);
-      setShowSubmitBtn(false);
+      // setShowSubmitBtn(false);
 
       if (index < questions.length - 1) {
-        setShowNextQuestionBtn(true);
+        // setShowNextQuestionBtn(true);
         handleNextQuestion();
       } else {
-        setShowNextQuestionBtn(false);
+        // setShowNextQuestionBtn(false);
       }
       if (index === questions.length - 1) {
         setShowEndAndReview(true);

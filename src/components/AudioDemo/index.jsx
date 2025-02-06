@@ -27,9 +27,9 @@ const AudioDemo = ({
   const [startRealInterview, setStartRealInterview] = useState(false);
 
   useEffect(() => {
-    if (isRunning && timeLeft < 60) {
+    if (isRunning && timeLeft < 120) {
       timerRef.current = setInterval(() => {
-        setTimeLeft((prevTime) => (prevTime < 60 ? prevTime + 1 : 60));
+        setTimeLeft((prevTime) => (prevTime < 120 ? prevTime + 1 : 120));
       }, 1000);
     }
 
@@ -51,7 +51,7 @@ const AudioDemo = ({
 
     if (transcriptWorking === "No") {
       toast.error(
-        "if transcript is not working try reloading please try reloading the page"
+        "if transcript is not working please try reloading the page"
       );
       return;
     }
@@ -86,7 +86,7 @@ const AudioDemo = ({
       </p>
       <p className=" text-sm mb-4">
         {" "}
-        <strong>Note:</strong> this question is for testing only
+        <strong>Note:</strong> This question is for testing purpose only
       </p>
       <div className="md:w-1/2 w-11/12 min-h-80 rounded-2xl px-4 py-6 shadow-md border border-gray-300">
         <p className="text-black md:text-2xl text-lg text-center font-semibold select-none">
@@ -94,7 +94,7 @@ const AudioDemo = ({
         </p>
         <div className="flex items-center justify-center mt-2">
           <p className="text-gray-600 md:text-5xl text-2xl font-semibold">
-            {`${formatTime(timeLeft)}/1:00`}
+            {`${formatTime(timeLeft)}/2:00`}
           </p>
         </div>
         {isRunning && (

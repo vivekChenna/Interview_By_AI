@@ -38,20 +38,13 @@ const QuestionsPage = () => {
   const streamRef = useRef(null);
   const deepgramRef = useRef(null);
   const timerRef = useRef(null);
-  const {
-    questions,
-    jobDescription,
-    setJobDescription,
-    setQuestions,
-    setPdfReport,
-  } = useContext(Context);
   const [startInterview, setStartInterview] = useState(false);
   const [index, setIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
-  const [showSubmitBtn, setShowSubmitBtn] = useState(false);
+  const [showSubmitBtn, setShowSubmitBtn] = useState(true);
   const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -65,6 +58,15 @@ const QuestionsPage = () => {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [showTranscript, setShowTranscript] = useState(false);
   const [showAudioDemo, setShowAudioDemo] = useState(false);
+  const [showSkipButton, setShowSkipButton] = useState(true);
+  const [isQuestionSkipped, setIsQuestionSkipped] = useState(false);
+  const {
+    questions,
+    jobDescription,
+    setJobDescription,
+    setQuestions,
+    setPdfReport,
+  } = useContext(Context);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -375,8 +377,8 @@ const QuestionsPage = () => {
 
   const handleNextQuestion = () => {
     if (index < questions.length - 1) {
-      setIndex(index + 1);
       unMuteCandidate();
+      setIndex(index + 1);
       HandleRestart();
     }
   };
@@ -429,8 +431,9 @@ const QuestionsPage = () => {
     setTimeLeft(0);
     setTranscript("");
     setInterimTranscript("");
-    setShowSubmitBtn(false);
     setShowNextQuestionBtn(false);
+    setShowSkipButton(true);
+    setShowSubmitBtn(true);
   };
 
   const SubmitHandler = async () => {
@@ -444,7 +447,6 @@ const QuestionsPage = () => {
           answer: transcript,
         },
       });
-      setIsQuestionAndAnswerSaved(false);
 
       setSavedTranscript((prev) => [
         ...prev,
@@ -457,6 +459,7 @@ const QuestionsPage = () => {
 
       if (index < questions.length - 1) {
         setShowNextQuestionBtn(true);
+        handleNextQuestion();
       } else {
         setShowNextQuestionBtn(false);
       }
@@ -466,6 +469,7 @@ const QuestionsPage = () => {
     } catch (error) {
       setErrorMsg("Internal Server Error, Please Click on Submit Once Again");
     }
+    setIsQuestionAndAnswerSaved(false);
   };
 
   const muteCandidate = () => {
@@ -480,6 +484,26 @@ const QuestionsPage = () => {
     if (audioTrack) {
       audioTrack.enabled = true;
     }
+  };
+
+  const skipQuestion = async () => {
+    setIsQuestionSkipped(true);
+    setShowSubmitBtn(false);
+    muteCandidate();
+    setIsRecording(false);
+    await saveQuestionAndAnswer({
+      variables: {
+        candidateId: uniqueId,
+        question: questions[index]?.question,
+        answer: "",
+      },
+    });
+    if (index === questions.length - 1) {
+      setShowEndAndReview(true);
+    } else {
+      handleNextQuestion();
+    }
+    setIsQuestionSkipped(false);
   };
 
   return !startInterview && !showAudioDemo ? (
@@ -536,20 +560,54 @@ const QuestionsPage = () => {
             </p>
           </div>
 
-          {isRecording && (
-            <div
-              className=" w-full flex items-center justify-center mt-7 cursor-pointer"
-              onClick={() => {
-                setIsRecording(false);
-                setShowSubmitBtn(true);
-                muteCandidate();
-              }}
-            >
-              <div className=" border bg-red-600 p-4 flex items-center justify-center w-max rounded-full">
-                <FaPause color="white" fontSize="1.8rem" />
+          <div className=" flex items-center justify-center relative w-full gap-5">
+            {/* {isRecording && (
+              <div
+                className="flex items-center justify-center mt-7 cursor-pointer"
+                onClick={() => {
+                  setIsRecording(false);
+                  setShowSubmitBtn(true);
+                  muteCandidate();
+                  setShowSkipButton(false);
+                }}
+              >
+                <div className=" border bg-red-600 p-4 flex items-center justify-center w-max rounded-full">
+                  <FaPause color="white" fontSize="1.8rem" />
+                </div>
               </div>
-            </div>
-          )}
+            )} */}
+
+            {showSubmitBtn && (
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <button
+                  disabled={isQuestionAndAnswerSaved}
+                  className=" md:px-5 px-4 md:py-[8px] py-[3px] font-semibold rounded-lg text-white bg-blue-950 shadow-md text-lg "
+                  onClick={() => {
+                    setIsRecording(false);
+                    muteCandidate();
+                    setShowSkipButton(false);
+                    SubmitHandler();
+                  }}
+                >
+                  {isQuestionAndAnswerSaved
+                    ? "Loading Next..."
+                    : " Save And Next"}
+                </button>
+              </div>
+            )}
+            {showSkipButton && (
+              <div className="flex items-center justify-center mt-8 gap-4">
+                <button
+                  disabled={isQuestionSkipped}
+                  className=" md:px-5 px-4 md:py-[8px] py-[3px] font-semibold rounded-lg text-white bg-blue-950 shadow-md text-lg  justify-end items-end"
+                  onClick={() => skipQuestion()}
+                >
+                  {isQuestionSkipped ? "Loading Next..." : " Skip"}
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <Webcam
               audio={false}
@@ -567,19 +625,7 @@ const QuestionsPage = () => {
             <AudioWave />
           </div>
 
-          {showSubmitBtn && (
-            <div className=" w-full flex items-center justify-center mt-8 gap-4">
-              <button
-                disabled={isQuestionAndAnswerSaved}
-                className=" md:px-5 px-4 md:py-[8px] py-[3px] font-semibold rounded-lg text-white bg-blue-950 shadow-md text-lg "
-                onClick={() => SubmitHandler()}
-              >
-                {isQuestionAndAnswerSaved ? "Saving..." : " Save"}
-              </button>
-            </div>
-          )}
-
-          {showNextQuestionBtn ? (
+          {/* {showNextQuestionBtn ? (
             <div className=" w-full flex items-center justify-center mt-6">
               <button
                 className=" w-max md:px-5 px-4 py-2 drop-shadow-md rounded-lg text-lg scale-95 hover:scale-100 transition-all duration-300 bg-blue-950 text-white shadow-md"
@@ -588,7 +634,7 @@ const QuestionsPage = () => {
                 Next Question
               </button>
             </div>
-          ) : null}
+          ) : null} */}
           {showEndAndReview && (
             <div className=" w-full flex items-center justify-center">
               <button

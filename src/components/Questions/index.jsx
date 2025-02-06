@@ -65,7 +65,7 @@ const QuestionsPage = () => {
     jobDescription,
     setJobDescription,
     setQuestions,
-    setPdfReport,
+    setUserPdfDetails,
   } = useContext(Context);
 
   useEffect(() => {
@@ -191,6 +191,10 @@ const QuestionsPage = () => {
     onCompleted: (data) => {
       const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
       setUserDetails(data?.Candidate?.[0]);
+      setUserPdfDetails((prevState) => ({
+        ...prevState,
+        userName: data?.Candidate?.[0]?.name,
+      }));
       const currentTime = new Date();
 
       if (data?.Candidate?.[0]?.is_link_used === true) {
@@ -396,7 +400,11 @@ const QuestionsPage = () => {
       });
       const myReport = await generateReport(jobDescription, savedTranscript);
       const myReportData = myReport?.choices[0]?.message?.content;
-      setPdfReport(myReportData);
+      setUserPdfDetails((prevState) => ({
+        ...prevState,
+        pdfReport: myReportData,
+        userScore: score,
+      }));
       setLoading(false);
       SetIsRedirected(true);
       const response = await fetch(

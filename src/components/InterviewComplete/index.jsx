@@ -3,7 +3,10 @@ import { generateReportPdf } from "../../utils/pdfGenerator";
 import { Context } from "../../context/context";
 
 const InterviewComplete = () => {
-  const { pdfReport } = useContext(Context);
+  const { userPdfDetails } = useContext(Context);
+  const candidateName = userPdfDetails?.userName;
+  const reportText = userPdfDetails?.pdfReport;
+  const score = userPdfDetails?.userScore;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px]">
@@ -14,7 +17,7 @@ const InterviewComplete = () => {
         <button
           className=" bg-green-400 p-2.5 mb-4 border rounded-lg text-white"
           onClick={() => {
-            generateReportPdf(pdfReport , "https://firebasestorage.googleapis.com/v0/b/andai-admin-portal.appspot.com/o/images%2FnewAndai.jpg?alt=media&token=b92aa612-bf3a-4da5-a626-794649957d6c");
+            generateReportPdf(reportText, candidateName, score);
           }}
         >
           {" "}

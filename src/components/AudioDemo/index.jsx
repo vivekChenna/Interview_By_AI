@@ -25,6 +25,7 @@ const AudioDemo = ({
   const timerRef = useRef(null);
   const [updateTranscription] = useMutation(updateTranscriptionWorking);
   const [startRealInterview, setStartRealInterview] = useState(false);
+  const [showReloadingText, setShowReloadingText] = useState(false);
 
   useEffect(() => {
     if (isRunning && timeLeft < 120) {
@@ -49,12 +50,12 @@ const AudioDemo = ({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (transcriptWorking === "No") {
-      toast.error(
-        "if transcript is not working please try reloading the page"
-      );
-      return;
-    }
+    // if (transcriptWorking === "No") {
+    //   toast.error(
+    //     "if transcript is not working please try reloading the page"
+    //   );
+    //   return;
+    // }
 
     if (!transcriptWorking) {
       toast.error("Please select an option");
@@ -72,7 +73,12 @@ const AudioDemo = ({
           isWorking,
         },
       });
-      setStartRealInterview(true);
+
+      if (isWorking === false) {
+        setShowReloadingText(true);
+      } else {
+        setStartRealInterview(true);
+      }
     } catch (error) {
       console.log("error", error);
     }
@@ -168,6 +174,19 @@ const AudioDemo = ({
           >
             Start Interview
           </button>
+        </div>
+      )}
+
+      {showReloadingText && (
+        <div>
+          <div className="p-4 text-center mt-6 md:w-1/2 w-11/12">
+            <h2 className="text-xl font-semibold text-gray-800">
+            Thank you for your submission!
+            </h2>
+            <p className=" text-gray-600 text-lg leading-6">
+            If your transcription isn't working, please try reloading the page.
+            </p>
+          </div>
         </div>
       )}
 

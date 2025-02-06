@@ -195,7 +195,7 @@ export const generateReportPdf = async (
         y,
         ...styles.subheading,
       });
-      y -= 25;
+      y -= 20;
       continue;
     }
 

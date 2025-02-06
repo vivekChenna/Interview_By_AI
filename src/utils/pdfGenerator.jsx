@@ -1,10 +1,27 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { saveAs } from "file-saver";
 
-export const generateReportPdf = async (reportText) => {
+// Helper function to fetch image from URL and convert to base64
+const getImageFromUrl = async (url) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error fetching logo:', error);
+    return null;
+  }
+};
+
+export const generateReportPdf = async (reportText, logoUrl) => {
   const pdfDoc = await PDFDocument.create();
   
-  // Embed multiple fonts for different styles
+  // Embed fonts
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const helveticaOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
@@ -37,18 +54,49 @@ export const generateReportPdf = async (reportText) => {
     return false;
   };
 
-  // Draw header with company logo placeholder
-  const headerHeight = 100;
+  // Add logo if URL is provided
+  if (logoUrl) {
+    try {
+      const logoBase64 = await getImageFromUrl(logoUrl);
+      if (logoBase64) {
+        // Remove the data URL prefix
+        const base64Data = logoBase64.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+        const logoImage = await pdfDoc.embedPng(Buffer.from(base64Data, 'base64'));
+        
+        // Calculate logo dimensions (max width 150px, maintaining aspect ratio)
+        const maxWidth = 150;
+        const scaleRatio = maxWidth / logoImage.width;
+        const scaledWidth = logoImage.width * scaleRatio;
+        const scaledHeight = logoImage.height * scaleRatio;
+
+        // Draw logo in top-left corner
+        page.drawImage(logoImage, {
+          x: margin,
+          y: pageHeight - margin - scaledHeight,
+          width: scaledWidth,
+          height: scaledHeight,
+        });
+
+        // Adjust starting y position based on logo height
+        y = pageHeight - margin - scaledHeight - 20;
+      }
+    } catch (error) {
+      console.error('Error embedding logo:', error);
+      // Continue without logo if there's an error
+    }
+  }
+
+  // Draw header line
   page.drawRectangle({
     x: margin,
-    y: pageHeight - headerHeight,
+    y: y + 10,
     width: contentWidth,
     height: 2,
     color: rgb(0.8, 0.8, 0.8)
   });
 
   // Draw title
-  y -= 80;
+  y -= 50;
   page.drawText("Interview Performance Report", {
     x: margin,
     y,
@@ -85,7 +133,7 @@ export const generateReportPdf = async (reportText) => {
         if (textWidth > contentWidth) {
           checkNewPage(20);
           page.drawText(currentLine.trim(), {
-            x: margin + 15, // indent content
+            x: margin + 15,
             y,
             ...styles.normal
           });

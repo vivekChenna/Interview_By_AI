@@ -499,6 +499,7 @@ const QuestionsPage = () => {
       },
     });
     if (index === questions.length - 1) {
+      setShowSkipButton(false);
       setShowEndAndReview(true);
     } else {
       handleNextQuestion();

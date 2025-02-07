@@ -266,105 +266,105 @@ const QuestionsPage = () => {
   const [saveQuestionAndAnswer] = useMutation(saveUserQuestionAnswer);
   const [updateUserScore] = useMutation(updateCandidateScoreAndLinkUsed);
 
-  const startListening = async () => {
+  const startRecording = async () => {
     try {
       if (!deepgramRef.current) {
         throw new Error("Deepgram connection not initialized or not open");
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-      streamRef.current = stream;
+      // Step 1: Request access to both audio and video streams
+      console.log("Requesting audio and video access...");
+      const [audioStream, videoStream] = await Promise.all([
+        navigator.mediaDevices.getUserMedia({ audio: true }),
+        navigator.mediaDevices.getUserMedia({ video: true }),
+      ]);
 
-      const recorder = new MediaRecorder(stream, {
+      if (!audioStream) throw new Error("Failed to access microphone");
+      if (!videoStream) throw new Error("Failed to access webcam");
+
+      console.log("Microphone and webcam access granted");
+
+      // Step 2: Store streams in refs to manage them across the component
+      streamRef.current = audioStream;
+      webcamRef.current = { stream: videoStream }; // Ensure webcamRef has the video stream
+
+      // Step 3: Start audio recording
+      const audioRecorder = new MediaRecorder(audioStream, {
         mimeType: "audio/webm",
       });
 
-      recorder.ondataavailable = (event) => {
+      // Send recorded data to Deepgram for processing
+      audioRecorder.ondataavailable = (event) => {
         if (event.data.size > 0 && deepgramRef.current) {
           deepgramRef.current.send(event.data);
         }
       };
-      recorder.start(500);
-      mediaRecorderRef.current = recorder;
+
+      audioRecorder.start(500); // Send audio data every 500ms
+      mediaRecorderRef.current = audioRecorder;
+
+      console.log("Audio recording started.");
+
+      // Step 4: Start video recording
+      const videoRecorder = new MediaRecorder(videoStream, {
+        mimeType: "video/webm",
+      });
+
+      videoRecorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) {
+          setRecordedChunks((prevChunks) => [...prevChunks, event.data]); // Store in state
+        }
+      });
+      videoRecorder.start();
+
+      videoRecorderRef.current = videoRecorder;
+
+      console.log("Video recording started.");
+
+      // Step 5: Perform UI updates
       enableFullScreen();
       setShowAudioDemo(true);
       setTranscript("");
       setInterimTranscript("");
     } catch (error) {
-      console.error("Error accessing microphone:", error);
-      toast.error("Microphone access denied. Please allow microphone access.");
+      console.error("Error starting recording:", error);
+      toast.error("Microphone or webcam access denied. Please allow access.");
     }
   };
 
-  const startVideoRecording = () => {
-    if (!webcamRef.current || !webcamRef.current.stream) {
-      console.error("Webcam not available");
-      return;
-    }
-
-    const videoStream = webcamRef.current.stream;
-
-    // Ensure the stream is active
-    if (!videoStream.active) {
-      console.error("Webcam stream is inactive");
-      return;
-    }
-
-    videoRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
-      mimeType: "video/webm",
-    });
-
-    videoRecorderRef.current.addEventListener(
-      "dataavailable",
-      handleDataAvailable
-    );
-
-    videoRecorderRef.current.start();
-  };
-
-  const handleDataAvailable = ({ data }) => {
-    if (data.size > 0) {
-      setRecordedChunks((prev) => prev.concat(data));
-    }
-  };
+  
 
   const stopListening = () => {
-    // Stop the media recorder first
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state === "recording"
-    ) {
+    console.log("Stopping all media and cleanup...");
+  
+    // Stop Audio Recording
+    if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
+      mediaRecorderRef.current = null;
     }
-
-    // Stop the stream tracks (webcam or other)
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-    }
-
-    // Clear media recorder and stream references
-    mediaRecorderRef.current = null;
-    streamRef.current = null;
-
-    // Stop the webcam stream if it's active
-    if (webcamRef.current && webcamRef.current.stream) {
-      webcamRef.current.stream.getTracks().forEach((track) => track.stop());
-    }
-
-    // Clear webcam reference and video recorder reference
-    webcamRef.current = null;
-    videoRecorderRef.current = null;
-
-    // If videoRecorderRef is active, stop it
-    if (videoRecorderRef.current) {
+  
+    // Stop Video Recording
+    if (videoRecorderRef.current?.state === "recording") {
       videoRecorderRef.current.stop();
+      videoRecorderRef.current = null;
     }
-
+  
+    // Stop all active media streams (microphone & webcam)
+    [streamRef.current, webcamRef.current?.stream].forEach((stream) => {
+      stream?.getTracks().forEach((track) => track.stop());
+    });
+  
+    // Clear media stream references
+    streamRef.current = null;
+    webcamRef.current = null;
+  
+    // Stop any running timers
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+  
+    console.log("Media recording and streaming stopped.");
   };
 
   const enableFullScreen = () => {
@@ -521,7 +521,7 @@ const QuestionsPage = () => {
       isInterviewStarted={isInterviewStarted}
       setStartInterview={async () => {
         SetIsInterviewStarted(true);
-        await startListening();
+        await startRecording();
         SetIsInterviewStarted(false);
       }}
     />
@@ -536,7 +536,6 @@ const QuestionsPage = () => {
         setIsRecording(true);
       }}
       muteCandidate={muteCandidate}
-      startVideoRecording={() => startVideoRecording()}
       transcript={transcript}
       webcamRef={webcamRef}
       interimTranscript={interimTranscript}
@@ -631,9 +630,6 @@ const QuestionsPage = () => {
               mirrored={true}
               screenshotFormat="image/jpeg"
               className="w-full h-full object-cover"
-              onUserMedia={(stream) => {
-                // startVideoRecording();
-              }}
             />
           </div>
 

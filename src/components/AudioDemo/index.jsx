@@ -50,13 +50,6 @@ const AudioDemo = ({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // if (transcriptWorking === "No") {
-    //   toast.error(
-    //     "if transcript is not working please try reloading the page"
-    //   );
-    //   return;
-    // }
-
     if (!transcriptWorking) {
       toast.error("Please select an option");
       return;
@@ -178,19 +171,20 @@ const AudioDemo = ({
       )}
 
       {showReloadingText && (
-        <div>
-          <div className="p-4 text-center mt-6 md:w-1/2 w-11/12">
+        <div className="p-4 text-center mt-6 md:w-1/2 w-11/12 ">
+          <div className="">
             <h2 className="text-xl font-semibold text-gray-800">
-            Thank you for your submission!
+              Thank you for your submission!
             </h2>
-            <p className=" text-gray-600 text-lg leading-6">
-            If your transcription isn't working, please try reloading the page.
+            <p className=" text-gray-600 text-lg leading-6 mt-1">
+              If your transcription isn't working, please try reloading the
+              page.
             </p>
           </div>
         </div>
       )}
 
-      <div className="absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-lg">
+      <div className={`absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 ${isRunning?" border-red-500":"border-white"} shadow-lg`}>
         <Webcam
           audio={false}
           ref={webcamRef}

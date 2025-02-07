@@ -288,6 +288,7 @@ const QuestionsPage = () => {
       };
       recorder.start(500);
       mediaRecorderRef.current = recorder;
+      enableFullScreen();
       setShowAudioDemo(true);
       setTranscript("");
       setInterimTranscript("");
@@ -522,8 +523,6 @@ const QuestionsPage = () => {
         SetIsInterviewStarted(true);
         await startListening();
         SetIsInterviewStarted(false);
-
-        enableFullScreen();
       }}
     />
   ) : showAudioDemo ? (
@@ -617,7 +616,15 @@ const QuestionsPage = () => {
             )}
           </div>
 
-          <div className="absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-lg">
+          <div
+            className={`absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 ${
+              isRecording
+                ? " border-red-500"
+                : isQuestionAndAnswerSaved
+                ? " border-green-500"
+                : "border-white"
+            } shadow-lg`}
+          >
             <Webcam
               audio={false}
               ref={webcamRef}
@@ -630,7 +637,7 @@ const QuestionsPage = () => {
             />
           </div>
 
-          <div className="absolute bottom-5 border h-[90px] p-5 w-max left-0 right-0 flex items-center justify-center mx-auto rounded-md  border-gray-300">
+          <div className="absolute bottom-5 border h-[90px] p-5 w-max left-0 right-0 flex items-center justify-center mx-auto rounded-md  border-gray-300 z-50 bg-[#FFF8E3]">
             <AudioWave />
           </div>
 
@@ -673,7 +680,7 @@ const QuestionsPage = () => {
           </button>
 
           {showTranscript && (
-            <div className=" mt-5 max-h-40 overflow-y-auto p-3">
+            <div className=" mt-5 max-h-36 overflow-y-auto p-3">
               <p className="text-center">{transcript}</p>
               {interimTranscript && (
                 <p className="text-gray-500 italic mt-7 text-center">

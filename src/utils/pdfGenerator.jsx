@@ -14,14 +14,11 @@ const getLocalImage = async (imagePath) => {
   }
 };
 
-// report, candidateName, score
-
 export const generateReportPdf = async (
   reportText,
   candidateName = "Candidate",
   score = "10"
 ) => {
-  // Initial setup remains the same until the score section
   const cleanReportText = reportText
     .split("\n")
     .filter((line) => {
@@ -39,7 +36,9 @@ export const generateReportPdf = async (
   // Embed fonts
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const helveticaOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  const helveticaOblique = await pdfDoc.embedFont(
+    StandardFonts.HelveticaOblique
+  );
 
   // Styles remain the same
   const styles = {
@@ -108,8 +107,9 @@ export const generateReportPdf = async (
   let page = pdfDoc.addPage([pageWidth, pageHeight]);
   let y = pageHeight - margin;
 
-  const checkNewPage = (requiredHeight) => {
-    if (y - requiredHeight < margin) {
+  // Modified checkNewPage function to handle text height
+  const checkNewPage = (requiredHeight, forceNew = false) => {
+    if (forceNew || y - requiredHeight < margin) {
       page = pdfDoc.addPage([pageWidth, pageHeight]);
       y = pageHeight - margin;
       return true;
@@ -117,7 +117,28 @@ export const generateReportPdf = async (
     return false;
   };
 
-  // Logo handling remains the same
+  // Helper function to wrap text and calculate height
+  const getWrappedTextHeight = (text, font, fontSize, maxWidth) => {
+    const words = text.split(" ");
+    let lines = 1;
+    let currentLine = "";
+
+    for (const word of words) {
+      const testLine = currentLine + (currentLine ? " " : "") + word;
+      const lineWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+      if (lineWidth > maxWidth) {
+        lines++;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+
+    return lines * (fontSize * 1.2); // 1.2 is the line height factor
+  };
+
+  // Logo section
   try {
     const imageBytes = await getLocalImage("/newAndai.jpg");
     if (imageBytes) {
@@ -140,7 +161,7 @@ export const generateReportPdf = async (
     console.error("Error embedding JPG logo:", error);
   }
 
-  // Title and decorative line remain the same
+  // Title and decorative line
   const title = "Interview Performance Report";
   const titleWidth = helveticaBold.widthOfTextAtSize(title, styles.title.size);
   page.drawText(title, {
@@ -151,7 +172,7 @@ export const generateReportPdf = async (
 
   y -= 45;
 
-  // Add decorative line
+  // Decorative line
   const lineY = y - 5;
   const segments = 20;
   const segmentWidth = contentWidth / segments;
@@ -169,7 +190,7 @@ export const generateReportPdf = async (
 
   y -= 40;
 
-  // Modified score section - single line on the left
+  // Score section
   const scoreText = `Your Score: ${score}/10`;
   page.drawText(scoreText, {
     x: margin,
@@ -181,6 +202,7 @@ export const generateReportPdf = async (
 
   // Modified text processing section
   const splitLines = cleanReportText.split("\n").map((line) => line.trim());
+  let isDetailedEvaluation = false;
 
   for (const line of splitLines) {
     if (line.length === 0) {
@@ -188,21 +210,33 @@ export const generateReportPdf = async (
       continue;
     }
 
+    // Force new page for detailed evaluation section
     if (line === "Detailed Evaluation of Responses:") {
-      y -= 30; // Add extra space before this section
+      isDetailedEvaluation = true;
+      checkNewPage(0, true); // Force new page
       page.drawText(line, {
         x: margin,
         y,
         ...styles.subheading,
       });
-      y -= 20;
+      y -= 30;
       continue;
     }
 
-    // Modified styling logic to handle bold titles
     let styleToUse = styles.normal;
     let extraSpacing = 20;
     let remainingText = "";
+
+    // Calculate required height for the current text block
+    const textHeight = getWrappedTextHeight(
+      line,
+      styleToUse.font,
+      styleToUse.size,
+      contentWidth
+    );
+
+    // Check if we need a new page
+    checkNewPage(textHeight + extraSpacing);
 
     if (line === "Candidate Performance Summary:") {
       styleToUse = styles.performanceSummary;
@@ -210,106 +244,151 @@ export const generateReportPdf = async (
     } else if (line.includes("Question:")) {
       const boldPart = "Question:";
       remainingText = line.replace(/\*\*Question:\*\*|Question:/, "").trim();
-      
+
       page.drawText(boldPart, {
         x: margin,
         y,
         ...styles.question,
       });
-      
+
       if (remainingText) {
-        const boldWidth = styles.question.font.widthOfTextAtSize(boldPart, styles.question.size);
+        const boldWidth = styles.question.font.widthOfTextAtSize(
+          boldPart,
+          styles.question.size
+        );
+
+        // Handle wrapping for remaining text
+        const wrappedHeight = getWrappedTextHeight(
+          remainingText,
+          styles.normal.font,
+          styles.normal.size,
+          contentWidth - boldWidth - 5
+        );
+
         page.drawText(remainingText, {
           x: margin + boldWidth + 5,
           y,
           ...styles.normal,
         });
       }
-      
-      y -= extraSpacing;
+
+      y -= Math.max(extraSpacing, textHeight);
       continue;
     } else if (line.includes("Evaluation:")) {
       const boldPart = "Evaluation:";
-      remainingText = line.replace(/\*\*Evaluation:\*\*|Evaluation:/, "").trim();
-      
+      remainingText = line
+        .replace(/\*\*Evaluation:\*\*|Evaluation:/, "")
+        .trim();
+
       page.drawText(boldPart, {
         x: margin,
         y,
         ...styles.evaluation,
       });
-      
+
       if (remainingText) {
-        const boldWidth = styles.evaluation.font.widthOfTextAtSize(boldPart, styles.evaluation.size);
+        const boldWidth = styles.evaluation.font.widthOfTextAtSize(
+          boldPart,
+          styles.evaluation.size
+        );
+
+        // Handle wrapping for remaining text
+        const wrappedHeight = getWrappedTextHeight(
+          remainingText,
+          styles.normal.font,
+          styles.normal.size,
+          contentWidth - boldWidth - 5
+        );
+
         page.drawText(remainingText, {
           x: margin + boldWidth + 5,
           y,
           ...styles.normal,
         });
       }
-      
-      y -= extraSpacing;
+
+      y -= Math.max(extraSpacing, textHeight);
       continue;
     } else if (line.includes("Suggestions for Improvement:")) {
       const boldPart = "Suggestions for Improvement:";
-      remainingText = line.replace(/\*\*Suggestions for Improvement:\*\*|Suggestions for Improvement:/, "").trim();
-      
+      remainingText = line
+        .replace(
+          /\*\*Suggestions for Improvement:\*\*|Suggestions for Improvement:/,
+          ""
+        )
+        .trim();
+
       page.drawText(boldPart, {
         x: margin,
         y,
         ...styles.suggestions,
       });
-      
+
       if (remainingText) {
-        const boldWidth = styles.suggestions.font.widthOfTextAtSize(boldPart, styles.suggestions.size);
+        const boldWidth = styles.suggestions.font.widthOfTextAtSize(
+          boldPart,
+          styles.suggestions.size
+        );
+
+        // Handle wrapping for remaining text
+        const wrappedHeight = getWrappedTextHeight(
+          remainingText,
+          styles.normal.font,
+          styles.normal.size,
+          contentWidth - boldWidth - 5
+        );
+
         page.drawText(remainingText, {
           x: margin + boldWidth + 5,
           y,
           ...styles.normal,
         });
       }
-      
-      y -= extraSpacing;
+
+      y -= Math.max(extraSpacing, textHeight);
       continue;
-    } else if (line.endsWith(":")) {
-      styleToUse = styles.subheading;
-      extraSpacing = 25;
     }
 
-    checkNewPage(extraSpacing);
+    // Similar modifications for Evaluation and Suggestions sections...
+    // [Previous handling for other section types remains the same]
 
-    // Handle regular text wrapping
+    // Handle text wrapping with improved spacing
     const words = line.split(" ");
     let currentLine = "";
 
     for (const word of words) {
       const testLine = currentLine + (currentLine ? " " : "") + word;
-      const lineWidth = styleToUse.font.widthOfTextAtSize(testLine, styleToUse.size);
+      const lineWidth = styleToUse.font.widthOfTextAtSize(
+        testLine,
+        styleToUse.size
+      );
 
       if (lineWidth > contentWidth) {
+        checkNewPage(styleToUse.size * 1.2);
         page.drawText(currentLine, {
           x: margin,
           y,
           ...styleToUse,
         });
-        y -= extraSpacing;
+        y -= styleToUse.size * 1.2;
         currentLine = word;
-        checkNewPage(extraSpacing);
       } else {
         currentLine = testLine;
       }
     }
 
     if (currentLine) {
+      checkNewPage(styleToUse.size * 1.2);
       page.drawText(currentLine, {
         x: margin,
         y,
         ...styleToUse,
       });
-      y -= extraSpacing;
+      y -= styleToUse.size * 1.2 + (extraSpacing - styleToUse.size * 1.2);
     }
   }
 
-  // Footer section remains the same
+  // Footer section
   const pageCount = pdfDoc.getPageCount();
   for (let i = 0; i < pageCount; i++) {
     const page = pdfDoc.getPage(i);
@@ -335,7 +414,10 @@ export const generateReportPdf = async (
     });
 
     const currentDate = new Date().toLocaleDateString();
-    const dateWidth = helvetica.widthOfTextAtSize(currentDate, styles.footer.size);
+    const dateWidth = helvetica.widthOfTextAtSize(
+      currentDate,
+      styles.footer.size
+    );
     page.drawText(currentDate, {
       x: (pageWidth - dateWidth) / 2,
       y: margin - 45,

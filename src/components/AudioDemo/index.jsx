@@ -119,7 +119,7 @@ const AudioDemo = ({
         {/* Transcript Working Question */}
       </div>
 
-      {!isRunning && !startRealInterview && (
+      {!isRunning && !startRealInterview && !showReloadingText && (
         <form onSubmit={handleSubmit} className="mt-6">
           <p className="text-lg font-semibold text-center">
             Was the transcript working correctly?

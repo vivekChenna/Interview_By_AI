@@ -407,7 +407,7 @@ const QuestionsPage = () => {
       setLoading(false);
       SetIsRedirected(true);
       const response = await fetch(
-        "https://app19.serverless.andaihub.com/sendMail",
+        "https://app19.dev.andaihub.com/sendMail",
         {
           method: "POST",
           headers: {

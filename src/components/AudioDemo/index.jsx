@@ -82,7 +82,7 @@ const AudioDemo = ({
       <p className=" text-lg mb-2">
         Please Answer The Below Question And Click on Pause Button
       </p>
-      <p className=" text-sm mb-4">
+      <p className=" text-sm mb-4 font-medium">
         {" "}
         <strong>Note:</strong> This question is for testing purpose only
       </p>

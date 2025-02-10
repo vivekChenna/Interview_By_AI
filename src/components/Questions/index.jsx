@@ -229,11 +229,11 @@ const QuestionsPage = () => {
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
     document.addEventListener("msfullscreenchange", handleFullscreenChange);
-    // document.addEventListener("contextmenu", disableRightClick);
+    document.addEventListener("contextmenu", disableRightClick);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      // document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener("contextmenu", disableRightClick);
       document.removeEventListener(
         "webkitfullscreenchange",
         handleFullscreenChange
@@ -332,38 +332,36 @@ const QuestionsPage = () => {
     }
   };
 
-  
-
   const stopListening = () => {
     console.log("Stopping all media and cleanup...");
-  
+
     // Stop Audio Recording
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current = null;
     }
-  
+
     // Stop Video Recording
     if (videoRecorderRef.current?.state === "recording") {
       videoRecorderRef.current.stop();
       videoRecorderRef.current = null;
     }
-  
+
     // Stop all active media streams (microphone & webcam)
     [streamRef.current, webcamRef.current?.stream].forEach((stream) => {
       stream?.getTracks().forEach((track) => track.stop());
     });
-  
+
     // Clear media stream references
     streamRef.current = null;
     webcamRef.current = null;
-  
+
     // Stop any running timers
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  
+
     console.log("Media recording and streaming stopped.");
   };
 
@@ -463,16 +461,13 @@ const QuestionsPage = () => {
           question: questions[index]?.question,
           answer: transcript,
         },
-      ]);
-      // setShowSubmitBtn(false);
+      ]); // Save transcript for review
 
       if (index < questions.length - 1) {
-        // setShowNextQuestionBtn(true);
         handleNextQuestion();
-      } else {
-        // setShowNextQuestionBtn(false);
       }
       if (index === questions.length - 1) {
+        setShowSubmitBtn(false);
         setShowEndAndReview(true);
       }
     } catch (error) {
@@ -496,24 +491,28 @@ const QuestionsPage = () => {
   };
 
   const skipQuestion = async () => {
-    setIsQuestionSkipped(true);
-    setShowSubmitBtn(false);
-    muteCandidate();
-    setIsRecording(false);
-    await saveQuestionAndAnswer({
-      variables: {
-        candidateId: uniqueId,
-        question: questions[index]?.question,
-        answer: "",
-      },
-    });
-    if (index === questions.length - 1) {
-      setShowSkipButton(false);
-      setShowEndAndReview(true);
-    } else {
-      handleNextQuestion();
+    try {
+      setIsQuestionSkipped(true);
+      setShowSubmitBtn(false);
+      muteCandidate();
+      setIsRecording(false);
+      await saveQuestionAndAnswer({
+        variables: {
+          candidateId: uniqueId,
+          question: questions[index]?.question,
+          answer: "",
+        },
+      });
+      if (index === questions.length - 1) {
+        setShowSkipButton(false);
+        setShowEndAndReview(true);
+      } else {
+        handleNextQuestion();
+      }
+      setIsQuestionSkipped(false);
+    } catch (error) {
+      console.log('error', error);
     }
-    setIsQuestionSkipped(false);
   };
 
   return !startInterview && !showAudioDemo ? (

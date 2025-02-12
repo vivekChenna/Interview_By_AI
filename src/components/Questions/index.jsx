@@ -403,7 +403,7 @@ const QuestionsPage = () => {
       );
 
       const preSignedUrlResponse = await fetch(
-        "http://localhost:5000/generate-presigned-url",
+        "https://app22.dev.andaihub.com/generate-presigned-url",
         {
           method: "POST",
           headers: {
@@ -430,7 +430,7 @@ const QuestionsPage = () => {
       if (!uploadResponse.ok) throw new Error("Upload failed");
 
       const myReportUrl = await fetch(
-        `http://localhost:5000/get-pdf-url?fileName=${encodeURIComponent(
+        `https://app22.dev.andaihub.com/get-pdf-url?fileName=${encodeURIComponent(
           fileName
         )}`
       );

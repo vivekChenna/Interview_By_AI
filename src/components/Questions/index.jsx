@@ -28,6 +28,7 @@ import {
 import { formatTime } from "../../utils/timer";
 import AudioDemo from "../AudioDemo";
 import toast from "react-hot-toast";
+import { generateReportPdf } from "../../utils/pdfGenerator";
 
 const QuestionsPage = () => {
   const { jobRole, uniqueId } = useParams();
@@ -65,7 +66,6 @@ const QuestionsPage = () => {
     jobDescription,
     setJobDescription,
     setQuestions,
-    setUserPdfDetails,
   } = useContext(Context);
 
   useEffect(() => {
@@ -191,10 +191,6 @@ const QuestionsPage = () => {
     onCompleted: (data) => {
       const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
       setUserDetails(data?.Candidate?.[0]);
-      setUserPdfDetails((prevState) => ({
-        ...prevState,
-        userName: data?.Candidate?.[0]?.name,
-      }));
       const currentTime = new Date();
 
       if (data?.Candidate?.[0]?.is_link_used === true) {
@@ -389,6 +385,7 @@ const QuestionsPage = () => {
   const reviewInterviewer = async () => {
     try {
       setLoading(true);
+      const fileName = `${userDetails?.name}.pdf`;
       const data = await reviewSolutions(savedTranscript);
       const score = data?.choices[0]?.message?.content;
       await updateUserScore({
@@ -399,26 +396,61 @@ const QuestionsPage = () => {
       });
       const myReport = await generateReport(jobDescription, savedTranscript);
       const myReportData = myReport?.choices[0]?.message?.content;
-      setUserPdfDetails((prevState) => ({
-        ...prevState,
-        pdfReport: myReportData,
-        userScore: score,
-      }));
-      setLoading(false);
-      SetIsRedirected(true);
-      const response = await fetch(
-        "https://app19.dev.andaihub.com/sendMail",
+        const pdfBytes = await generateReportPdf(
+        myReportData,
+        userDetails?.name,
+        score
+      );
+
+      const preSignedUrlResponse = await fetch(
+        "http://localhost:5000/generate-presigned-url",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            ...userDetails,
-            score: score,
+            fileName,
+            fileType: "application/pdf",
           }),
         }
       );
+
+      if (!preSignedUrlResponse.ok)
+        throw new Error("Failed to get pre-signed URL");
+
+      const { url } = await preSignedUrlResponse.json();
+
+      const uploadResponse = await fetch(url, {
+        method: "PUT",
+        body: pdfBytes,
+        headers: { "Content-Type": "application/pdf" },
+      });
+
+      if (!uploadResponse.ok) throw new Error("Upload failed");
+
+      const myReportUrl = await fetch(
+        `http://localhost:5000/get-pdf-url?fileName=${encodeURIComponent(
+          fileName
+        )}`
+      );
+
+      const { downloadUrl } = await myReportUrl.json();
+
+      setLoading(false);
+      SetIsRedirected(true);
+
+      const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...userDetails,
+          score: score,
+          downloadUrl,
+        }),
+      });
       const result = await response.json();
       if (response.ok) {
         console.log("Email sent successfully:", result);
@@ -438,7 +470,6 @@ const QuestionsPage = () => {
     setTimeLeft(0);
     setTranscript("");
     setInterimTranscript("");
-    // setShowNextQuestionBtn(false);
     setShowSkipButton(true);
     setShowSubmitBtn(true);
   };
@@ -511,7 +542,7 @@ const QuestionsPage = () => {
       }
       setIsQuestionSkipped(false);
     } catch (error) {
-      console.log('error', error);
+      console.log("error", error);
     }
   };
 
@@ -567,22 +598,6 @@ const QuestionsPage = () => {
           </div>
 
           <div className=" flex items-center justify-center relative w-full gap-5">
-            {/* {isRecording && (
-              <div
-                className="flex items-center justify-center mt-7 cursor-pointer"
-                onClick={() => {
-                  setIsRecording(false);
-                  setShowSubmitBtn(true);
-                  muteCandidate();
-                  setShowSkipButton(false);
-                }}
-              >
-                <div className=" border bg-red-600 p-4 flex items-center justify-center w-max rounded-full">
-                  <FaPause color="white" fontSize="1.8rem" />
-                </div>
-              </div>
-            )} */}
-
             {showSubmitBtn && (
               <div className="flex items-center justify-center gap-4 mt-8">
                 <button
@@ -636,16 +651,6 @@ const QuestionsPage = () => {
             <AudioWave />
           </div>
 
-          {/* {showNextQuestionBtn ? (
-            <div className=" w-full flex items-center justify-center mt-6">
-              <button
-                className=" w-max md:px-5 px-4 py-2 drop-shadow-md rounded-lg text-lg scale-95 hover:scale-100 transition-all duration-300 bg-blue-950 text-white shadow-md"
-                onClick={handleNextQuestion}
-              >
-                Next Question
-              </button>
-            </div>
-          ) : null} */}
           {showEndAndReview && (
             <div className=" w-full flex items-center justify-center">
               <button

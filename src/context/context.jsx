@@ -5,11 +5,6 @@ export const Context = createContext();
 const ContextProvider = (props) => {
   const [questions, setQuestions] = useState([]);
   const [jobDescription, setJobDescription] = useState("");
-  const [userPdfDetails, setUserPdfDetails] = useState({
-    pdfReport: "",
-    userName: "",
-    userScore: "",
-  });
 
   return (
     <Context.Provider
@@ -18,7 +13,6 @@ const ContextProvider = (props) => {
         setQuestions,
         jobDescription,
         setJobDescription,
-        userPdfDetails, setUserPdfDetails
       }}
     >
       {props.children}

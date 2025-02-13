@@ -12,13 +12,12 @@ function RulesAndRegulations({ setStartInterview, isInterviewStarted }) {
           interview.
         </p>
       </div>
-      <div className="md:w-1/2 w-11/12 min-h-80 rounded-2xl p-4 shadow-md border border-gray-300">
-        <ul className="list-disc list-inside text-gray-700">
+      <div className="md:w-3/5 w-11/12 min-h-80 rounded-2xl p-4 shadow-md border border-gray-300">
+        <ul className="list-disc pl-5 text-gray-700">
           <li className="mb-2">
             <b>Allow microphone and webcam access</b> to record your responses.
             Without it, your interview responses <b>cannot be captured</b>, and
-            the session 
-            <b className=" mx-1">will be invalid</b>.
+            the session <b className="mx-1">will be invalid</b>.
           </li>
           <li className="mb-2">
             No other tab except the interview tab should access the{" "}
@@ -52,7 +51,7 @@ function RulesAndRegulations({ setStartInterview, isInterviewStarted }) {
             <b>immediate disqualification</b>.
           </li>
           <li className="mb-2">
-            Stay in <b>full-screen mode</b> throughout the interview.
+            Stay in <b>full-screen mode</b> throughout the interview.{" "}
             <b>Exiting full-screen mode</b> will <b>terminate the session</b>.
           </li>
         </ul>

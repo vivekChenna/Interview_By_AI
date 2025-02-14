@@ -1,32 +1,40 @@
-# Build Stage
-FROM node:18-alpine as build
+# Stage 1: Build React App using Node 18 Alpine
+FROM node:18-alpine AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
 
-# Install dependencies (including dev dependencies)
-RUN npm install
+# Install dependencies
 
-# Copy the rest of the application code
+
+RUN npm install --frozen-lockfile
+
+
+
+# Copy the rest of the application files
 COPY . .
 
-# Build the application
+# Build the React app
 RUN npm run build
 
-# Production Stage
-FROM node:18-alpine
+# Stage 2: Serve the React App using Nginx
+FROM nginx:alpine
 
-# Install a lightweight static file server
-RUN npm install -g serve
+WORKDIR /usr/share/nginx/html
 
-# Copy the build output from the previous stage
-COPY --from=build /app/dist /app/dist
+RUN rm -rf ./*
 
-# Expose the port
-EXPOSE 9056
+# Copy the built React app from the build stage
+COPY --from=build /app/build .
 
-# Command to serve the application
-CMD ["serve", "-s", "/app/dist", "-l", "9056"]
+# COPY the custom Nginx configuration file
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+
+EXPOSE 9084
+
+# Start the Nginx server
+CMD ["nginx", "-g", "daemon off;"]

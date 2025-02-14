@@ -402,6 +402,9 @@ const QuestionsPage = () => {
         score
       );
 
+      setLoading(false);
+      SetIsRedirected(true);
+
       const preSignedUrlResponse = await fetch(
         "https://app22.dev.andaihub.com/generate-presigned-url",
         {
@@ -437,8 +440,7 @@ const QuestionsPage = () => {
 
       const { downloadUrl } = await myReportUrl.json();
 
-      setLoading(false);
-      SetIsRedirected(true);
+     
 
       const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
         method: "POST",
@@ -661,7 +663,7 @@ const QuestionsPage = () => {
                 {loading
                   ? "Evaluating your responses..."
                   : isRedirected
-                  ? "Redirecting you..."
+                  ? "Please wait..."
                   : "End Interview"}
               </button>
             </div>

@@ -1,5 +1,7 @@
 export const getPayload = (jobDescription) => {
   return {
+    temperature: 0.7,
+    top_p: 0.8,
     messages: [
       {
         role: "user",
@@ -48,6 +50,8 @@ export const getPayload = (jobDescription) => {
 
 export const getReviewSolutionsPayload = (arrayOfObjects) => {
   return {
+    temperature: 0.7,
+    top_p: 0.8,
     messages: [
       {
         role: "system",
@@ -112,14 +116,14 @@ export const getReviewSolutionsPayload = (arrayOfObjects) => {
   };
 };
 
-
-export const getGenerateReportPayload = (jobDescription, arrayOfObjects)=>{
-
-    return {
-        messages: [
-            {
-              role: "system",
-              content: `<system_prompt>
+export const getGenerateReportPayload = (jobDescription, arrayOfObjects) => {
+  return {
+    temperature: 0.7,
+    top_p: 0.8,
+    messages: [
+      {
+        role: "system",
+        content: `<system_prompt>
       # **YOU ARE A HIGHLY EXPERIENCED AI INTERVIEW RESPONSE EVALUATOR**  
       YOUR TASK IS TO **ANALYZE A CANDIDATE’S INTERVIEW RESPONSES** TO TECHNICAL QUESTIONS AND **GENERATE A DETAILED, ACTIONABLE INTERVIEW REPORT** THAT HIGHLIGHTS STRENGTHS, IDENTIFIES WEAKNESSES, AND PROVIDES SPECIFIC IMPROVEMENT SUGGESTIONS.
       
@@ -209,19 +213,18 @@ export const getGenerateReportPayload = (jobDescription, arrayOfObjects)=>{
       - **DO NOT GENERALIZE FEEDBACK—PROVIDE CONCRETE, ACTIONABLE SUGGESTIONS.**
       - **DO NOT ADD UNNECESSARY INFORMATION. STAY FOCUSED ON THE INTERVIEW RESPONSES.**
       </system_prompt>`,
-            },
-            {
-              role: "user",
-              content: JSON.stringify(
-                {
-                  job_description: jobDescription,
-                  interview_responses: arrayOfObjects,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-    }
-
-}
+      },
+      {
+        role: "user",
+        content: JSON.stringify(
+          {
+            job_description: jobDescription,
+            interview_responses: arrayOfObjects,
+          },
+          null,
+          2
+        ),
+      },
+    ],
+  };
+};

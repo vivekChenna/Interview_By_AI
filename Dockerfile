@@ -1,40 +1,32 @@
-# Stage 1: Build React App using Node 18 Alpine
-FROM node:18-alpine AS build
+# Stage 1: Build the Vite React App
+FROM node:18-alpine AS builder
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package.json package-lock.json ./
 
 # Install dependencies
-
-
 RUN npm install --frozen-lockfile
 
-
-
-# Copy the rest of the application files
+# Copy project files
 COPY . .
 
-# Build the React app
+# Build the Vite app
 RUN npm run build
 
-# Stage 2: Serve the React App using Nginx
+# Stage 2: Serve with Nginx
 FROM nginx:alpine
 
-WORKDIR /usr/share/nginx/html
+# Remove default Nginx static files
+RUN rm -rf /usr/share/nginx/html/*
 
-RUN rm -rf ./*
+# Copy the built app from the "builder" stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy the built React app from the build stage
-COPY --from=build /app/build .
-
-# COPY the custom Nginx configuration file
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-
+# Expose port 80 for serving the app
 EXPOSE 9084
 
-# Start the Nginx server
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

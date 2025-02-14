@@ -649,7 +649,7 @@ const QuestionsPage = () => {
             />
           </div>
 
-          <div className="absolute bottom-5 border h-[90px] p-5 w-max left-0 right-0 flex items-center justify-center mx-auto rounded-md  border-gray-300 z-50 bg-[#FFF8E3]">
+          <div className="absolute bottom-5 border h-[90px] p-5 w-max left-0 right-0 md:flex items-center justify-center mx-auto rounded-md  border-gray-300 z-50 bg-[#FFF8E3] hidden ">
             <AudioWave />
           </div>
 

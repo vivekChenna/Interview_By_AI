@@ -55,18 +55,13 @@ const QuestionsPage = () => {
     useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isRedirected, SetIsRedirected] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [showTranscript, setShowTranscript] = useState(false);
   const [showAudioDemo, setShowAudioDemo] = useState(false);
   const [showSkipButton, setShowSkipButton] = useState(true);
   const [isQuestionSkipped, setIsQuestionSkipped] = useState(false);
-  const {
-    questions,
-    jobDescription,
-    setJobDescription,
-    setQuestions,
-  } = useContext(Context);
+  const { questions, jobDescription, setJobDescription, setQuestions } =
+    useContext(Context);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -384,88 +379,101 @@ const QuestionsPage = () => {
 
   const reviewInterviewer = async () => {
     try {
+
       setLoading(true);
       const fileName = `${userDetails?.name}.pdf`;
-      const data = await reviewSolutions(savedTranscript);
+
+      // Fetch Review Score and Generate Report in Parallel
+      const [data, myReport] = await Promise.all([
+        reviewSolutions(savedTranscript),
+        generateReport(jobDescription, savedTranscript),
+      ]);
+
       const score = data?.choices[0]?.message?.content;
+      const myReportData = myReport?.choices[0]?.message?.content;
+
+      // Update Score and Generate PDF
       await updateUserScore({
         variables: {
           id: uniqueId,
           user_score: score,
         },
       });
-      const myReport = await generateReport(jobDescription, savedTranscript);
-      const myReportData = myReport?.choices[0]?.message?.content;
-        const pdfBytes = await generateReportPdf(
+
+      const pdfBytes = await generateReportPdf(
         myReportData,
         userDetails?.name,
         score
       );
 
-      setLoading(false);
-      SetIsRedirected(true);
+      const preSignedUrl = await fetchPresignedUrl(fileName);
+      await uploadFile(preSignedUrl, pdfBytes);
 
-      const preSignedUrlResponse = await fetch(
-        "https://app22.dev.andaihub.com/generate-presigned-url",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fileName,
-            fileType: "application/pdf",
-          }),
-        }
-      );
+      const downloadUrl = await getDownloadUrl(fileName);
 
-      if (!preSignedUrlResponse.ok)
-        throw new Error("Failed to get pre-signed URL");
+      await sendEmail({ ...userDetails, score, downloadUrl });
 
-      const { url } = await preSignedUrlResponse.json();
-
-      const uploadResponse = await fetch(url, {
-        method: "PUT",
-        body: pdfBytes,
-        headers: { "Content-Type": "application/pdf" },
-      });
-
-      if (!uploadResponse.ok) throw new Error("Upload failed");
-
-      const myReportUrl = await fetch(
-        `https://app22.dev.andaihub.com/get-pdf-url?fileName=${encodeURIComponent(
-          fileName
-        )}`
-      );
-
-      const { downloadUrl } = await myReportUrl.json();
-
-     
-
-      const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...userDetails,
-          score: score,
-          downloadUrl,
-        }),
-      });
-      const result = await response.json();
-      if (response.ok) {
-        console.log("Email sent successfully:", result);
-      } else {
-        console.error("Error sending email:", result?.error);
-      }
-
-      SetIsRedirected(false);
       navigate("/complete");
     } catch (error) {
       console.log("error", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const fetchPresignedUrl = async (fileName) => {
+    const response = await fetch(
+      "https://app22.dev.andaihub.com/generate-presigned-url",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName, fileType: "application/pdf" }),
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to get pre-signed URL");
+
+    const { url } = await response.json();
+    return url;
+  };
+
+  // Helper function to upload file
+const uploadFile = async (url, file) => {
+  const response = await fetch(url, {
+    method: "PUT",
+    body: file,
+    headers: { "Content-Type": "application/pdf" },
+  });
+
+  if (!response.ok) throw new Error("Upload failed");
+};
+
+
+const getDownloadUrl = async (fileName) => {
+  const response = await fetch(
+    `https://app22.dev.andaihub.com/get-pdf-url?fileName=${encodeURIComponent(fileName)}`
+  );
+
+  if (!response.ok) throw new Error("Failed to fetch download URL");
+
+  const { downloadUrl } = await response.json();
+  return downloadUrl;
+};
+
+
+const sendEmail = async (data) => {
+  const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Error sending email: ${errorData?.error}`);
+  }
+};
+
 
   const HandleRestart = () => {
     setIsRecording(false);
@@ -658,13 +666,9 @@ const QuestionsPage = () => {
               <button
                 className=" border-2 rounded-lg px-4 py-1 font-medium bg-red-100 text-red-900 text-sm md:text-xl flex items-center justify-center mt-6 hover:scale-105 transition-all ease-out duration-300"
                 onClick={() => reviewInterviewer()}
-                disabled={loading || isRedirected}
+                disabled={loading}
               >
-                {loading
-                  ? "Evaluating your responses..."
-                  : isRedirected
-                  ? "Please wait..."
-                  : "End Interview"}
+                {loading ? "Evaluating your responses..." : "End Interview"}
               </button>
             </div>
           )}

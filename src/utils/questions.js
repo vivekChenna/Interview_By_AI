@@ -1,17 +1,11 @@
-// import { getGroqChatCompletion } from "../config/groq";
 import { getPayload } from "../constants/payload";
 
 export const getQuestions = async (job_description) => {
-  // const data = await getGroqChatCompletion(job_description);
-
-  // const myQuestionData = data?.choices[0]?.message?.content;
-
-  // return JSON.parse(myQuestionData);
 
   const payload = getPayload(job_description);
 
   const response = await fetch(
-    "https://ai-vdwivedi6332ai921470488247.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-02-15-preview",
+    "https://ai-vdwivedi6332ai921470488247.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview",
     {
       method: "POST",
       headers: {

@@ -12,7 +12,6 @@
 // import runChat from "../../config/gemini";
 // import { useContext } from "react";
 // import { Context } from "../../context/context";
-// import { getGroqChatCompletion } from "../../config/groq";
 
 const JobDetails = () => {
 //   // const [jobDescription, setJobDescription] = useState("");
@@ -29,7 +28,6 @@ const JobDetails = () => {
 //       e.preventDefault();
 //       // console.log("called run chat");
 //       setShowLoading(true);
-//       const data = await getGroqChatCompletion("");
 
 //       const myQuestionData = data?.choices[0]?.message?.content;
 

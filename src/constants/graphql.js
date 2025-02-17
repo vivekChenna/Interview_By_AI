@@ -18,14 +18,14 @@ export const saveUserQuestionAnswer = gql`
   }
 `;
 
-export const updateCandidateScoreAndLinkUsed = gql`
-  mutation updateUserScore($id: uuid!, $user_score: String!) {
+export const updateCandidateStatusAndLinkUsed = gql`
+  mutation updateCandidateLinkAndStatus($id: uuid!, $status: String!) {
     update_Candidate_by_pk(
       pk_columns: { id: $id }
-      _set: { user_score: $user_score, is_link_used: true }
+      _set: { status: $status, is_link_used: true }
     ) {
       id
-      user_score
+      status
       is_link_used
     }
   }

@@ -22,7 +22,7 @@ import {
 import AudioWave from "../../utils/listening-motion";
 import {
   saveUserQuestionAnswer,
-  updateCandidateScoreAndLinkUsed,
+  updateCandidateStatusAndLinkUsed,
   getCandidateDetails,
 } from "../../constants/graphql";
 import { formatTime } from "../../utils/timer";
@@ -255,7 +255,9 @@ const QuestionsPage = () => {
   }, []);
 
   const [saveQuestionAndAnswer] = useMutation(saveUserQuestionAnswer);
-  const [updateUserScore] = useMutation(updateCandidateScoreAndLinkUsed);
+  const [updateCandidateLinkAndStatus] = useMutation(
+    updateCandidateStatusAndLinkUsed
+  );
 
   const startRecording = async () => {
     try {
@@ -379,39 +381,36 @@ const QuestionsPage = () => {
 
   const reviewInterviewer = async () => {
     try {
-
       setLoading(true);
-      const fileName = `${userDetails?.name}.pdf`;
+      // const fileName = `${userDetails?.name}.pdf`;
 
-      // Fetch Review Score and Generate Report in Parallel
-      const [data, myReport] = await Promise.all([
-        reviewSolutions(savedTranscript),
-        generateReport(jobDescription, savedTranscript),
-      ]);
+      // const [data, myReport] = await Promise.all([
+      //   reviewSolutions(savedTranscript),
+      //   generateReport(jobDescription, savedTranscript),
+      // ]);
 
-      const score = data?.choices[0]?.message?.content;
-      const myReportData = myReport?.choices[0]?.message?.content;
+      // const score = data?.choices[0]?.message?.content;
+      // const myReportData = myReport?.choices[0]?.message?.content;
 
-      // Update Score and Generate PDF
-      await updateUserScore({
+      await updateCandidateLinkAndStatus({
         variables: {
           id: uniqueId,
-          user_score: score,
+          status: "pending",
         },
       });
 
-      const pdfBytes = await generateReportPdf(
-        myReportData,
-        userDetails?.name,
-        score
-      );
+      // const pdfBytes = await generateReportPdf(
+      //   myReportData,
+      //   userDetails?.name,
+      //   score
+      // );
 
-      const preSignedUrl = await fetchPresignedUrl(fileName);
-      await uploadFile(preSignedUrl, pdfBytes);
+      // const preSignedUrl = await fetchPresignedUrl(fileName);
+      // await uploadFile(preSignedUrl, pdfBytes);
 
-      const downloadUrl = await getDownloadUrl(fileName);
+      // const downloadUrl = await getDownloadUrl(fileName);
 
-      await sendEmail({ ...userDetails, score, downloadUrl });
+      // await sendEmail({ ...userDetails, score, downloadUrl });
 
       navigate("/complete");
     } catch (error) {
@@ -438,42 +437,41 @@ const QuestionsPage = () => {
   };
 
   // Helper function to upload file
-const uploadFile = async (url, file) => {
-  const response = await fetch(url, {
-    method: "PUT",
-    body: file,
-    headers: { "Content-Type": "application/pdf" },
-  });
+  const uploadFile = async (url, file) => {
+    const response = await fetch(url, {
+      method: "PUT",
+      body: file,
+      headers: { "Content-Type": "application/pdf" },
+    });
 
-  if (!response.ok) throw new Error("Upload failed");
-};
+    if (!response.ok) throw new Error("Upload failed");
+  };
 
+  const getDownloadUrl = async (fileName) => {
+    const response = await fetch(
+      `https://app22.dev.andaihub.com/get-pdf-url?fileName=${encodeURIComponent(
+        fileName
+      )}`
+    );
 
-const getDownloadUrl = async (fileName) => {
-  const response = await fetch(
-    `https://app22.dev.andaihub.com/get-pdf-url?fileName=${encodeURIComponent(fileName)}`
-  );
+    if (!response.ok) throw new Error("Failed to fetch download URL");
 
-  if (!response.ok) throw new Error("Failed to fetch download URL");
+    const { downloadUrl } = await response.json();
+    return downloadUrl;
+  };
 
-  const { downloadUrl } = await response.json();
-  return downloadUrl;
-};
+  const sendEmail = async (data) => {
+    const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-
-const sendEmail = async (data) => {
-  const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`Error sending email: ${errorData?.error}`);
-  }
-};
-
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Error sending email: ${errorData?.error}`);
+    }
+  };
 
   const HandleRestart = () => {
     setIsRecording(false);
@@ -668,7 +666,7 @@ const sendEmail = async (data) => {
                 onClick={() => reviewInterviewer()}
                 disabled={loading}
               >
-                {loading ? "Evaluating your responses..." : "End Interview"}
+                {loading ? "Please Wait..." : "End Interview"}
               </button>
             </div>
           )}

@@ -410,13 +410,13 @@ const QuestionsPage = () => {
 
       // const downloadUrl = await getDownloadUrl(fileName);
 
-      // await sendEmail({ ...userDetails, score, downloadUrl });
+      await sendEmail({ ...userDetails });
 
+      setLoading(false);
       navigate("/complete");
     } catch (error) {
-      console.log("error", error);
-    } finally {
       setLoading(false);
+      console.log("error", error);
     }
   };
 
@@ -461,7 +461,7 @@ const QuestionsPage = () => {
   };
 
   const sendEmail = async (data) => {
-    const response = await fetch("https://app19.dev.andaihub.com/sendMail", {
+    const response = await fetch("https://app19.dev.andaihub.com/interviewCompletion", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

@@ -1,6 +1,5 @@
 export const getPayload = (jobDescription) => {
   return {
-    model: "Llama-3.3-70B-Instruct",
     temperature: 0.7,
     top_p: 0.8,
     messages: [

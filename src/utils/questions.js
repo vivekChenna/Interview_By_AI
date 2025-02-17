@@ -5,7 +5,7 @@ export const getQuestions = async (job_description) => {
   const payload = getPayload(job_description);
 
   const response = await fetch(
-    "https://ai-vdwivedi6332ai921470488247.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview",
+    "https://ai-vdwivedi6332ai921470488247.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-02-15-preview",
     {
       method: "POST",
       headers: {

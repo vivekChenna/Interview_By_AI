@@ -9,10 +9,9 @@ const Header = () => {
         <div>
           <Link>
             <img
-              src={'/newAndai.jpg'}
+              src={"/poorit.jpg"}
               alt="AI"
-              className="
-           w-14 rounded-md"
+              className=" md:w-14 h-full object-cover rounded"
             />
           </Link>
         </div>

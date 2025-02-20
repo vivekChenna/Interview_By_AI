@@ -220,11 +220,11 @@ const QuestionsPage = () => {
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
     document.addEventListener("msfullscreenchange", handleFullscreenChange);
-    // document.addEventListener("contextmenu", disableRightClick);
+    document.addEventListener("contextmenu", disableRightClick);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      // document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener("contextmenu", disableRightClick);
       document.removeEventListener(
         "webkitfullscreenchange",
         handleFullscreenChange
@@ -243,6 +243,7 @@ const QuestionsPage = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        toast.error("do not switch tabs during the interview");
         // alert("You cannot switch tabs during the interview.");
         // window.location.reload();
       }
@@ -302,15 +303,18 @@ const QuestionsPage = () => {
         mimeType: "video/webm",
       });
 
-      const response = await fetch("https://app22.dev.andaihub.com/api/start-upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userName: userName,
-        }),
-      });
+      const response = await fetch(
+        "https://app22.dev.andaihub.com/api/start-upload",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userName: userName,
+          }),
+        }
+      );
       const data = await response.json();
 
       setUploadId(data?.uploadId);
@@ -352,7 +356,6 @@ const QuestionsPage = () => {
 
   const completeUpload = async () => {
     try {
-
       const response = await fetch(
         "https://app22.dev.andaihub.com/api/complete-upload",
         {

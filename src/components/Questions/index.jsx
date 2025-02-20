@@ -302,7 +302,7 @@ const QuestionsPage = () => {
         mimeType: "video/webm",
       });
 
-      const response = await fetch("http://localhost:9083/api/start-upload", {
+      const response = await fetch("https://app22.dev.andaihub.com/api/start-upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -354,7 +354,7 @@ const QuestionsPage = () => {
     try {
 
       const response = await fetch(
-        "http://localhost:9083/api/complete-upload",
+        "https://app22.dev.andaihub.com/api/complete-upload",
         {
           method: "POST",
           body: JSON.stringify({
@@ -383,7 +383,7 @@ const QuestionsPage = () => {
       }
 
       const response = await fetch(
-        `http://localhost:9083/api/get-presigned-url?uploadId=${uploadId}&fileKey=${fileKey}&partNumber=${partNumber}`
+        `https://app22.dev.andaihub.com/api/get-presigned-url?uploadId=${uploadId}&fileKey=${fileKey}&partNumber=${partNumber}`
       );
       const { signedUrl } = await response.json();
 

@@ -31,7 +31,7 @@ import toast from "react-hot-toast";
 import { generateReportPdf } from "../../utils/pdfGenerator";
 
 const QuestionsPage = () => {
-  const { jobRole, uniqueId } = useParams();
+  const { jobRole, uniqueId, userName } = useParams();
   const navigate = useNavigate();
   const mediaRecorderRef = useRef(null);
   const webcamRef = useRef(null);
@@ -46,22 +46,22 @@ const QuestionsPage = () => {
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [showSubmitBtn, setShowSubmitBtn] = useState(true);
-  // const [showNextQuestionBtn, setShowNextQuestionBtn] = useState(false);
   const [showEndAndReview, setShowEndAndReview] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isInterviewStarted, SetIsInterviewStarted] = useState(false);
-  const [savedTranscript, setSavedTranscript] = useState([]);
   const [isQuestionAndAnswerSaved, setIsQuestionAndAnswerSaved] =
     useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [recordedChunks, setRecordedChunks] = useState([]);
   const [showTranscript, setShowTranscript] = useState(false);
   const [showAudioDemo, setShowAudioDemo] = useState(false);
   const [showSkipButton, setShowSkipButton] = useState(true);
   const [isQuestionSkipped, setIsQuestionSkipped] = useState(false);
-  const { questions, jobDescription, setJobDescription, setQuestions } =
-    useContext(Context);
+  const { questions, setJobDescription, setQuestions } = useContext(Context);
+  const [uploadId, setUploadId] = useState(null);
+  const [fileKey, setFileKey] = useState(null);
+  const uploadedParts = useRef([]);
+  const isUploading = useRef(true);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -163,7 +163,7 @@ const QuestionsPage = () => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         if (elapsed >= 120) {
           setIsRecording(false);
-          setShowSubmitBtn(true);
+          setShowSkipButton(false);
           setTimeLeft(120);
           muteCandidate();
         } else {
@@ -303,12 +303,38 @@ const QuestionsPage = () => {
         mimeType: "video/webm",
       });
 
-      videoRecorder.addEventListener("dataavailable", (event) => {
-        if (event.data.size > 0) {
-          setRecordedChunks((prevChunks) => [...prevChunks, event.data]); // Store in state
-        }
+      const response = await fetch("http://localhost:9083/api/start-upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: userName,
+        }),
       });
-      videoRecorder.start();
+      const data = await response.json();
+
+      setUploadId(data?.uploadId);
+      setFileKey(data?.fileKey);
+
+      let partNumber = 1;
+
+      videoRecorder.ondataavailable = async (event) => {
+        if (event.data.size > 0) {
+          const chunkBlob = new Blob([event.data], { type: "video/webm" });
+
+          const currentPartNumber = partNumber;
+          partNumber++;
+
+          await uploadChunkToS3(
+            chunkBlob,
+            currentPartNumber,
+            data?.uploadId,
+            data?.fileKey
+          );
+        }
+      };
+      videoRecorder.start(20000);
 
       videoRecorderRef.current = videoRecorder;
 
@@ -325,8 +351,70 @@ const QuestionsPage = () => {
     }
   };
 
-  const stopListening = () => {
-    console.log("Stopping all media and cleanup...");
+  const completeUpload = async () => {
+    try {
+
+      const response = await fetch(
+        "http://localhost:9083/api/complete-upload",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            uploadId,
+            fileKey,
+            parts: uploadedParts.current,
+          }),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const data = await response.json();
+
+      toast.success("Video fully uploaded!");
+    } catch (error) {
+      console.error("Error completing upload:", error);
+      toast.error("Upload finalization failed.");
+    }
+  };
+
+  const uploadChunkToS3 = async (chunkBlob, partNumber, uploadId, fileKey) => {
+    try {
+      if (!isUploading.current) {
+        console.warn(
+          `Skipping upload for chunk ${partNumber} (recording stopped)`
+        );
+        return;
+      }
+
+
+      const response = await fetch(
+        `http://localhost:9083/api/get-presigned-url?uploadId=${uploadId}&fileKey=${fileKey}&partNumber=${partNumber}`
+      );
+      const { signedUrl } = await response.json();
+
+      const uploadResponse = await fetch(signedUrl, {
+        method: "PUT",
+        body: chunkBlob,
+      });
+
+      if (uploadResponse.ok) {
+        const etag = uploadResponse.headers.get("ETag");
+
+        uploadedParts.current.push({
+          ETag: etag,
+          PartNumber: partNumber,
+        });
+
+      } else {
+        console.error(`Failed to upload chunk ${partNumber}`);
+      }
+    } catch (error) {
+      console.error("Error uploading chunk:", error);
+    }
+  };
+
+  const stopListening = async () => {
+  
+  
 
     // Stop Audio Recording
     if (mediaRecorderRef.current?.state === "recording") {
@@ -355,7 +443,7 @@ const QuestionsPage = () => {
       timerRef.current = null;
     }
 
-    console.log("Media recording and streaming stopped.");
+    isUploading.current = false;
   };
 
   const enableFullScreen = () => {
@@ -382,34 +470,14 @@ const QuestionsPage = () => {
   const reviewInterviewer = async () => {
     try {
       setLoading(true);
-      // const fileName = `${userDetails?.name}.pdf`;
-
-      // const [data, myReport] = await Promise.all([
-      //   reviewSolutions(savedTranscript),
-      //   generateReport(jobDescription, savedTranscript),
-      // ]);
-
-      // const score = data?.choices[0]?.message?.content;
-      // const myReportData = myReport?.choices[0]?.message?.content;
-
+        stopListening();
+      await completeUpload();
       await updateCandidateLinkAndStatus({
         variables: {
           id: uniqueId,
           status: "pending",
         },
       });
-
-      // const pdfBytes = await generateReportPdf(
-      //   myReportData,
-      //   userDetails?.name,
-      //   score
-      // );
-
-      // const preSignedUrl = await fetchPresignedUrl(fileName);
-      // await uploadFile(preSignedUrl, pdfBytes);
-
-      // const downloadUrl = await getDownloadUrl(fileName);
-
       await sendEmail({ ...userDetails });
 
       setLoading(false);
@@ -420,52 +488,16 @@ const QuestionsPage = () => {
     }
   };
 
-  const fetchPresignedUrl = async (fileName) => {
+
+  const sendEmail = async (data) => {
     const response = await fetch(
-      "https://app22.dev.andaihub.com/generate-presigned-url",
+      "https://app19.dev.andaihub.com/interviewCompletion",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName, fileType: "application/pdf" }),
+        body: JSON.stringify(data),
       }
     );
-
-    if (!response.ok) throw new Error("Failed to get pre-signed URL");
-
-    const { url } = await response.json();
-    return url;
-  };
-
-  // Helper function to upload file
-  const uploadFile = async (url, file) => {
-    const response = await fetch(url, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": "application/pdf" },
-    });
-
-    if (!response.ok) throw new Error("Upload failed");
-  };
-
-  const getDownloadUrl = async (fileName) => {
-    const response = await fetch(
-      `https://app22.dev.andaihub.com/get-pdf-url?fileName=${encodeURIComponent(
-        fileName
-      )}`
-    );
-
-    if (!response.ok) throw new Error("Failed to fetch download URL");
-
-    const { downloadUrl } = await response.json();
-    return downloadUrl;
-  };
-
-  const sendEmail = async (data) => {
-    const response = await fetch("https://app19.dev.andaihub.com/interviewCompletion", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -493,14 +525,6 @@ const QuestionsPage = () => {
           answer: transcript,
         },
       });
-
-      setSavedTranscript((prev) => [
-        ...prev,
-        {
-          question: questions[index]?.question,
-          answer: transcript,
-        },
-      ]); // Save transcript for review
 
       if (index < questions.length - 1) {
         handleNextQuestion();
@@ -637,23 +661,25 @@ const QuestionsPage = () => {
             )}
           </div>
 
-          <div
-            className={`absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 ${
-              isRecording
-                ? " border-red-500"
-                : isQuestionAndAnswerSaved
-                ? " border-green-500"
-                : "border-white"
-            } shadow-lg`}
-          >
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              mirrored={true}
-              screenshotFormat="image/jpeg"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          {isUploading?.current === true && (
+            <div
+              className={`absolute bottom-4 left-4 w-36 h-36 rounded-full overflow-hidden border-4 ${
+                isRecording
+                  ? " border-red-500"
+                  : isQuestionAndAnswerSaved
+                  ? " border-green-500"
+                  : "border-white"
+              } shadow-lg`}
+            >
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                mirrored={true}
+                screenshotFormat="image/jpeg"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
 
           <div className="absolute bottom-5 border h-[90px] p-5 w-max left-0 right-0 md:flex items-center justify-center mx-auto rounded-md  border-gray-300 z-50 bg-[#FFF8E3] hidden ">
             <AudioWave />

@@ -266,7 +266,6 @@ const QuestionsPage = () => {
       }
 
       // Step 1: Request access to both audio and video streams
-      console.log("Requesting audio and video access...");
       const [audioStream, videoStream] = await Promise.all([
         navigator.mediaDevices.getUserMedia({ audio: true }),
         navigator.mediaDevices.getUserMedia({ video: true }),
@@ -334,7 +333,7 @@ const QuestionsPage = () => {
           );
         }
       };
-      videoRecorder.start(20000);
+      videoRecorder.start(60000);
 
       videoRecorderRef.current = videoRecorder;
 
@@ -368,8 +367,6 @@ const QuestionsPage = () => {
       );
 
       const data = await response.json();
-
-      toast.success("Video fully uploaded!");
     } catch (error) {
       console.error("Error completing upload:", error);
       toast.error("Upload finalization failed.");
@@ -384,7 +381,6 @@ const QuestionsPage = () => {
         );
         return;
       }
-
 
       const response = await fetch(
         `http://localhost:9083/api/get-presigned-url?uploadId=${uploadId}&fileKey=${fileKey}&partNumber=${partNumber}`
@@ -403,7 +399,6 @@ const QuestionsPage = () => {
           ETag: etag,
           PartNumber: partNumber,
         });
-
       } else {
         console.error(`Failed to upload chunk ${partNumber}`);
       }
@@ -413,9 +408,6 @@ const QuestionsPage = () => {
   };
 
   const stopListening = async () => {
-  
-  
-
     // Stop Audio Recording
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
@@ -470,7 +462,7 @@ const QuestionsPage = () => {
   const reviewInterviewer = async () => {
     try {
       setLoading(true);
-        stopListening();
+      stopListening();
       await completeUpload();
       await updateCandidateLinkAndStatus({
         variables: {
@@ -484,10 +476,10 @@ const QuestionsPage = () => {
       navigate("/complete");
     } catch (error) {
       setLoading(false);
+      toast.error("something went wrong");
       console.log("error", error);
     }
   };
-
 
   const sendEmail = async (data) => {
     const response = await fetch(

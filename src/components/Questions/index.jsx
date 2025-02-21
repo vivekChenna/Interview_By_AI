@@ -85,9 +85,19 @@ const QuestionsPage = () => {
 
       try {
         const data = await getQuestions(myJobRole);
-        setQuestions(data);
+        if (data) {
+          setQuestions(data);
+        } else {
+          toast.error(
+            "Internal Server Error, please wait for sometime and try reloading the page "
+          );
+        }
         setJobDescription(myJobRole);
-      } catch (error) {}
+      } catch (error) {
+        toast.error(
+          "Internal Server Error, please wait for sometime and try reloading the page "
+        );
+      }
     };
 
     fetchQuestions();

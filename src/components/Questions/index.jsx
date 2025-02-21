@@ -15,6 +15,7 @@ import {
   AI_Engineer,
   Content_Specialist,
   Customer_Relations_Intern,
+  Graduate_Engineer_Trainee,
   Intern,
   Product_Management_Intern,
   UX_and_Interaction_Designer_Intern,
@@ -78,6 +79,8 @@ const QuestionsPage = () => {
           ? Intern
           : jobRole === "Content Specialist"
           ? Content_Specialist
+          : jobRole === "Graduate Engineer Trainee"
+          ? Graduate_Engineer_Trainee
           : "";
 
       try {

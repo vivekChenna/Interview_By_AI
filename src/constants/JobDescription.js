@@ -152,7 +152,6 @@ Ability to work independently and manage time effectively.
 
 `;
 
-
 export const Product_Management_Intern = `Job Description: Product Management Intern
 We are looking for a motivated and detail-oriented Product Management Intern to join our team. As an intern, you will gain hands-on experience in product management, working closely with cross-functional teams to bring new products to market and enhance existing ones.
 
@@ -177,4 +176,28 @@ Familiarity with product management tools such as JIRA, Trello, or Asana is a pl
 Passion for technology and product management.
 
 
-`
+`;
+
+export const Graduate_Engineer_Trainee = `Job Description: Graduate Engineer Trainee (GET)
+We are looking for a highly motivated and detail-oriented Graduate Engineer Trainee (GET) to join our team. As a GET, you will gain hands-on experience in software development, database management, and DevOps fundamentals while working closely with experienced professionals. This role is designed to equip fresh graduates with the technical skills and industry knowledge necessary for a successful career in software engineering.
+
+Responsibilities:
+Assist in the development and execution of software solutions.
+Gain an understanding of the software development lifecycle (SDLC) and participate in various phases of development.
+Work with databases to write and optimize queries, ensuring efficient data management.
+Learn and apply programming fundamentals to solve real-world technical challenges.
+Collaborate with cross-functional teams, including development, QA, and DevOps, to ensure smooth product delivery.
+Support the product team in tracking and analyzing software performance metrics.
+Develop a foundational understanding of DevOps practices and automation tools.
+Participate in brainstorming sessions to enhance problem-solving skills.
+
+
+Requirements:
+Strong analytical and problem-solving skills.
+Basic understanding of databases (SQL, relational databases, etc.).
+Knowledge of programming fundamentals (loops, functions, data structures, OOP concepts, etc.).
+Understanding of software development lifecycle models (Agile, Waterfall, etc.).
+Familiarity with DevOps concepts is a plus.
+Excellent communication and teamwork abilities.
+Eagerness to learn and adapt to new technologies.
+`;

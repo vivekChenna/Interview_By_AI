@@ -79,7 +79,7 @@ const AudioDemo = ({
 
   return (
     <div className="flex flex-col items-center justify-center h-full ">
-      <p className=" text-lg mb-2">
+      <p className=" text-lg mb-2 text-center text-wrap">
         Please Answer The Below Question And Click on Pause Button
       </p>
       <p className=" text-sm mb-4 font-medium">

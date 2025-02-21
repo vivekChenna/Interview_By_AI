@@ -4,10 +4,10 @@ function RulesAndRegulations({ setStartInterview, isInterviewStarted }) {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <div className="w-1/2 flex items-center flex-col md:gap-0 gap-5 justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-gray-800 w-max">
           Rules and Regulations
         </h2>
-        <p className="text-gray-600 mt-2 text-sm">
+        <p className="text-gray-600 mt-2 text-sm text-center">
           Please read the following rules carefully before starting the
           interview.
         </p>

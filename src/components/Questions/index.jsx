@@ -705,7 +705,7 @@ const QuestionsPage = () => {
           </button>
 
           {showTranscript && (
-            <div className=" mt-5 max-h-36 overflow-y-auto p-3">
+            <div className=" mt-5 max-h-28 overflow-y-auto p-3">
               <p className="text-center">{transcript}</p>
               {interimTranscript && (
                 <p className="text-gray-500 italic mt-7 text-center">

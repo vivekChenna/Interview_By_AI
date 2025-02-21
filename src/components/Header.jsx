@@ -4,14 +4,14 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
-    <div className=" h-24 md:px-10 md:py-6 py-4">
+    <div className=" h-24 md:px-10 px-4 md:py-6 py-4">
       <div className=" flex items-center md:gap-3">
         <div>
           <Link>
             <img
               src={"/poorit.jpg"}
               alt="AI"
-              className=" md:w-14 h-full object-cover rounded"
+              className=" md:w-14 md:h-full h-14 object-cover rounded"
             />
           </Link>
         </div>

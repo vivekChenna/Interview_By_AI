@@ -618,7 +618,7 @@ const QuestionsPage = () => {
           }
         >
           <button className=" flex items-center gap-2 text-sm md:text-[16px]">
-            Question {index + 1} / questions?.length
+            Question {index + 1} / {questions?.length}
           </button>
         </div>
       </div>

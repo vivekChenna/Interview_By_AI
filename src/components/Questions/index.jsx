@@ -8,7 +8,6 @@ import { Context } from "../../context/context";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa6";
 import { FaPause } from "react-icons/fa";
 import "react-loading-skeleton/dist/skeleton.css";
-import { generateReport, reviewSolutions } from "../../config/groq";
 import RulesAndRegulations from "../RulesAndRegulations";
 import { getQuestions } from "../../utils/questions";
 import {
@@ -29,7 +28,6 @@ import {
 import { formatTime } from "../../utils/timer";
 import AudioDemo from "../AudioDemo";
 import toast from "react-hot-toast";
-import { generateReportPdf } from "../../utils/pdfGenerator";
 
 const QuestionsPage = () => {
   const { jobRole, uniqueId, userName } = useParams();

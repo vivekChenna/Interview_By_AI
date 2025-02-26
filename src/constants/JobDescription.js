@@ -201,3 +201,154 @@ Familiarity with DevOps concepts is a plus.
 Excellent communication and teamwork abilities.
 Eagerness to learn and adapt to new technologies.
 `;
+
+export const Backend_Engineer_Devops = `Job Description
+We are seeking a dynamic Backend & DevOps Engineer with 3–5 years of hands-on experience to design, develop, deploy, and maintain scalable backend systems and robust DevOps pipelines. In this dual role, you will build high-performance APIs and microservices while ensuring seamless integration, continuous deployment, and system reliability. If you are passionate about automation, infrastructure as code, and efficient backend development, we’d love to hear from you.
+
+Requirements
+Key Responsibilities
+Backend Development:
+Design, implement, and maintain RESTful APIs and microservices.
+Develop high-performance, scalable backend systems using languages such as Python, Java, Node.js, or Go.
+Integrate with third-party APIs and databases (SQL/NoSQL) ensuring data integrity and performance.
+Write clean, modular, and well-documented code following best practices.
+DevOps & Infrastructure:
+Develop and maintain CI/CD pipelines for automated testing, deployment, and monitoring.
+Containerize applications using Docker and orchestrate deployments with Kubernetes or similar platforms.
+Manage cloud infrastructure (AWS, Azure, GCP) and utilize infrastructure-as-code tools like Terraform or CloudFormation.
+Monitor system performance, troubleshoot issues, and implement improvements to ensure high availability and scalability.
+Collaboration & Process Improvement:
+Collaborate with cross-functional teams including frontend developers, QA engineers, and product managers to align on project goals.
+Participate in code reviews, share knowledge, and continuously improve development and deployment processes.
+Contribute to system architecture discussions and provide insights into potential areas for automation and performance optimization.
+Requirements
+Experience:
+
+3–5 years of professional experience in backend development and DevOps engineering.
+Technical Skills:
+
+Proficient in at least one backend programming language (e.g., Python, Java, Node.js, Go).
+Hands-on experience with database systems (both SQL and NoSQL).
+Solid understanding of API design, microservices architecture, and software development best practices.
+Experience with CI/CD tools (Jenkins, GitLab CI, CircleCI, etc.) and version control systems (Git).
+Expertise in containerization (Docker) and orchestration platforms (Kubernetes).
+Familiarity with cloud service providers (AWS, Azure, or GCP) and infrastructure-as-code tools (Terraform, CloudFormation).
+Strong scripting skills (Bash, Python, etc.) for automation tasks.`;
+
+export const Cloud_Engineer = `Job Description
+
+We are seeking a highly skilled and motivated Platform Engineer to join our dynamic engineering team. In this role, you will design, develop, and optimize scalable backend systems using a modern tech stack. As a Senior Software Engineer, you will work closely with product and cross-functional teams to deliver high-performance, resilient, and secure systems that power our core platform systems. Your expertise in distributed systems and cloud-native technologies will be essential to the success of the team and the business.
+
+Backend System Design and Architecture: Lead the design and development of scalable, high-performance backend systems with a focus on reliability and maintainability.
+Backend Development: Build and maintain REST APIs and microservices using Python, leveraging the FastAPI framework, to integrate with various external systems and services.
+Messaging and Streaming: Work with Apache Kafka or Pulsar for building reliable, real-time data streaming pipelines and message-driven architectures.
+OLAP & Data Management: Develop solutions utilizing OLAP databases like StarRocks to support fast, analytical queries over large datasets. Optimize data ingestion and processing pipelines for high performance and low latency.
+Non-Relational Databases: Design and manage non-relational databases such as MongoDB, handling schema design, query optimization, and scaling issues to ensure performance at scale.
+Cloud Infrastructure: Utilize AWS for deploying, scaling, and managing cloud resources, including EC2, S3, Elastic Beanstalk, EKS, and other managed services.
+Infrastructure as Code (IaC): Implement infrastructure automation, ensuring consistent and scalable deployment of environments.
+Containerization and Orchestration: Leverage Kubernetes for deploying, managing, and scaling containerized applications in a cloud-native environment.
+Collaboration & Mentorship: Work closely with junior developers and provide technical leadership and mentorship on best practices, code quality, and system design principles.
+Continuous Improvement: Contribute to the evolution of engineering processes and practices, focusing on improving system performance, security, and efficiency.
+
+Requirements
+
+Education: Bachelor’s degree in Computer Science, Information Technology, Engineering, or a related field.
+Experience: 3+ years of experience in R&D architecture and integration
+Strong proficiency in using web frameworks such as Flask, Django, or FastAPI to build and maintain RESTful APIs.
+Experience with distributed messaging systems like Apache Kafka or Pulsar for building real-time data streaming pipelines.
+Experience in OLAP databases (e.g., StarRocks, ClickHouse) and experience with high-performance data storage, querying, and analytics.
+Solid experience working with NoSQL databases like MongoDB or similar, with a focus on scalability and performance optimization.
+Hands-on experience with AWS services (EC2, S3, Elastic Beanstalk, EKS, etc.) and cloud-native application development.
+Proficiency with Infrastructure as Code (such as Terraform), automating deployments and infrastructure management.
+Experience with containerization (Docker) and container orchestration using Kubernetes.
+Excellent problem-solving and debugging skills, particularly in distributed systems.
+Familiarity with CI/CD pipelines, version control (Git), and agile development practices.
+Growth mindset with a commitment to continuous learning.
+Ability to communicate complex technical ideas clearly and collaborate effectively with cross-functional teams.
+`;
+
+export const UI_UX_Engineer = `Job Description
+
+
+This is an amazing opportunity to be a Senior level Front-end Engineer in a high-growth, high-potential startup. In this role, you will play a pivotal role in architecting, designing, developing and delivering high quality front-end applications using ReactJS, HTML and CSS, that have a direct impact on the company’s product’s user experience.
+
+Lead the design and development of user-friendly and responsive user interfaces for the product, using ReactJS, CSS and HTML .
+Collaborate with cross functional teams that comprises UX designers, Product Managers, backend engineers, Devops and Customer Success to create and ship elegant and high quality web applications.
+Contribute to integration of micro frontends to ensure modularity and scalability in the front end architecture.
+Participate and contribute in key discussions related to user experience and end to end functional design of features.
+Quickly understand and be able to diagnose/troubleshoot complex systems/code and own key pieces of the system.
+Participate in peer reviews of specifications, design and code.
+Mentor junior engineers and drive best practices in front-end development.
+Own E2E from design, development to deployment of code using Docker and CI CD processes.
+Drive improvements in overall development processes, quality, identify key technical gaps and work closely with engineering leadership to prioritize and address.
+Stay updated with latest industry trends and emerging technologies to continuously improve our front end solutions.
+
+Requirements
+
+Proven experience as a Front end Engineer, with Strong portfolio of work using ReactJS, Typescript, HTML, CSS.
+Experience with responsive design and deep understanding of object-oriented design.
+Experience with performance debugging, front end caching and benchmarking.
+Good problem solving and debugging skills.
+Experience with building intuitive UI for dev-ops products will be a perfect fit.
+Experience with building shared platforms for high reusability would be great.
+Experience with building Micro-frontends and related patterns is a huge plus.
+Familiarity with Docker and CI/CD processes is a huge plus.
+Entrepreneurial spirit, priding yourself on getting things done with a high level of quality
+Strong desire to work in an unstructured, fast moving startup environment
+Formal Computer Science education required`;
+
+export const Project_Manager = `
+Job Description: Product Manager
+Experience Level: Senior
+ We’re looking for a dynamic Product Manager to lead product strategy, roadmap, and execution for our AI-powered offerings.
+
+As a Product Manager, you will work closely with cross-functional teams, including engineering, design, marketing, and customer success, to define and deliver exceptional solutions that meet the evolving needs of startups, MSMEs, and enterprise clients.
+
+
+Requirements
+Key Responsibilities
+Product Strategy & Vision
+
+Define product vision, strategy, and roadmap aligned with the company's goals and market demands.
+Identify growth opportunities by analyzing market trends, customer feedback, and competitive landscapes.
+Collaboration & Stakeholder Management
+
+Work closely with engineering, design, and marketing teams to bring ideas to life.
+Collaborate with enterprise, MSME, and startup customers to gather insights and ensure the product aligns with their unique needs.
+Execution & Delivery
+
+Manage the entire product lifecycle from concept to launch, ensuring timely delivery of high-quality solutions.
+Prioritize product features and enhancements based on business impact, customer value, and technical feasibility.
+Data-Driven Decisions
+
+Define and track product performance metrics (KPIs) to assess success and drive continuous improvement.
+Leverage data and analytics to refine the user experience and product performance.
+Customer-Centric Focus
+
+Advocate for customer needs and act as the voice of the user.
+Conduct product demos and gather actionable feedback to iterate and improve.
+
+
+Requirements
+Experience
+
+4+ years of experience in product management, ideally in SaaS, AI, or B2B platforms.
+Proven track record of managing and delivering complex products in a fast-paced environment.
+Skills & Expertise
+
+Strong understanding of AI technologies, marketplaces, and SaaS solutions.
+Proficient in creating product roadmaps, defining user stories, and prioritizing features.
+Exceptional analytical skills with experience in data-driven decision-making.
+Familiarity with tools like Jira, Trello, Figma, or similar project/product management tools.
+Soft Skills
+
+Excellent communication and presentation skills with the ability to articulate complex ideas simply.
+Strong problem-solving and critical-thinking abilities.
+Collaborative mindset and ability to work with diverse teams and stakeholders.
+Education
+
+Bachelor's degree in Computer Science, Engineering, Business, or a related field (MBA is a plus).
+Nice to Have
+
+Experience working with AI models, plugins, or workflows.
+Prior experience with startups or scaling B2B businesses.`;

@@ -12,11 +12,15 @@ import RulesAndRegulations from "../RulesAndRegulations";
 import { getQuestions } from "../../utils/questions";
 import {
   AI_Engineer,
+  Backend_Engineer_Devops,
+  Cloud_Engineer,
   Content_Specialist,
   Customer_Relations_Intern,
   Graduate_Engineer_Trainee,
   Intern,
   Product_Management_Intern,
+  Project_Manager,
+  UI_UX_Engineer,
   UX_and_Interaction_Designer_Intern,
 } from "../../constants/JobDescription";
 import AudioWave from "../../utils/listening-motion";
@@ -79,6 +83,14 @@ const QuestionsPage = () => {
           ? Content_Specialist
           : jobRole === "Graduate Engineer Trainee"
           ? Graduate_Engineer_Trainee
+          : jobRole === "Backend Engineer Devops"
+          ? Backend_Engineer_Devops
+          : jobRole === "Cloud Engineer"
+          ? Cloud_Engineer
+          : jobRole === "UI UX Engineer"
+          ? UI_UX_Engineer
+          : jobRole === "Project Manager"
+          ? Project_Manager
           : "";
 
       try {

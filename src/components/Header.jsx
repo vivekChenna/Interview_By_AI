@@ -9,7 +9,7 @@ const Header = () => {
         <div>
           <Link>
             <img
-              src={"/poorit.jpg"}
+              src={"/newAndai.jpg"}
               alt="AI"
               className=" md:w-14 md:h-full h-14 object-cover rounded"
             />

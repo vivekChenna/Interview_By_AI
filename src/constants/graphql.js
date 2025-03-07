@@ -40,6 +40,10 @@ export const getCandidateDetails = gql`
       job_role
       link_expiration
       is_link_used
+      Job {
+        title
+        description
+      }
     }
   }
 `;

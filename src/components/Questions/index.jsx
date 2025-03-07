@@ -68,30 +68,32 @@ const QuestionsPage = () => {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const myJobRole =
-        jobRole === "AI Engineer"
-          ? AI_Engineer
-          : jobRole === "Customer Relations Intern"
-          ? Customer_Relations_Intern
-          : jobRole === "Product Management Intern"
-          ? Product_Management_Intern
-          : jobRole === "UX and Interaction Designer Intern"
-          ? UX_and_Interaction_Designer_Intern
-          : jobRole === "Intern"
-          ? Intern
-          : jobRole === "Content Specialist"
-          ? Content_Specialist
-          : jobRole === "Graduate Engineer Trainee"
-          ? Graduate_Engineer_Trainee
-          : jobRole === "Backend Engineer Devops"
-          ? Backend_Engineer_Devops
-          : jobRole === "Cloud Engineer"
-          ? Cloud_Engineer
-          : jobRole === "UI UX Engineer"
-          ? UI_UX_Engineer
-          : jobRole === "Project Manager"
-          ? Project_Manager
-          : "";
+      // const myJobRole =
+      //   jobRole === "AI Engineer"
+      //     ? AI_Engineer
+      //     : jobRole === "Customer Relations Intern"
+      //     ? Customer_Relations_Intern
+      //     : jobRole === "Product Management Intern"
+      //     ? Product_Management_Intern
+      //     : jobRole === "UX and Interaction Designer Intern"
+      //     ? UX_and_Interaction_Designer_Intern
+      //     : jobRole === "Intern"
+      //     ? Intern
+      //     : jobRole === "Content Specialist"
+      //     ? Content_Specialist
+      //     : jobRole === "Graduate Engineer Trainee"
+      //     ? Graduate_Engineer_Trainee
+      //     : jobRole === "Backend Engineer Devops"
+      //     ? Backend_Engineer_Devops
+      //     : jobRole === "Cloud Engineer"
+      //     ? Cloud_Engineer
+      //     : jobRole === "UI UX Engineer"
+      //     ? UI_UX_Engineer
+      //     : jobRole === "Project Manager"
+      //     ? Project_Manager
+      //     : "";
+
+      const myJobRole = userDetails?.Job?.description;
 
       try {
         const data = await getQuestions(myJobRole);
@@ -110,8 +112,10 @@ const QuestionsPage = () => {
       }
     };
 
-    fetchQuestions();
-  }, []);
+    if (userDetails !== null) {
+      fetchQuestions();
+    }
+  }, [userDetails]);
 
   useEffect(() => {
     const initDeepgram = async () => {

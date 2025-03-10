@@ -32,6 +32,7 @@ import {
 import { formatTime } from "../../utils/timer";
 import AudioDemo from "../AudioDemo";
 import toast from "react-hot-toast";
+import { sanitizeName } from "../../utils/name-sanitization";
 
 const QuestionsPage = () => {
   const { jobRole, uniqueId, userName } = useParams();
@@ -330,6 +331,8 @@ const QuestionsPage = () => {
         mimeType: "video/webm",
       });
 
+      const sanitizedUserName = sanitizeName(userName);
+
       const response = await fetch(
         "https://app22.dev.andaihub.com/api/start-upload",
         {
@@ -338,7 +341,7 @@ const QuestionsPage = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userName: userName,
+            userName: sanitizedUserName,
           }),
         }
       );

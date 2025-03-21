@@ -12,10 +12,10 @@ import RulesAndRegulations from "../RulesAndRegulations";
 import { getQuestions } from "../../utils/questions";
 
 import AudioWave from "../../utils/listening-motion";
-import {
-  saveUserQuestionAnswer,
-  updateCandidateStatusAndLinkUsed,
-} from "../../constants/graphql";
+// import {
+//   saveUserQuestionAnswer,
+//   updateCandidateStatusAndLinkUsed,
+// } from "../../constants/graphql";
 import { formatTime } from "../../utils/timer";
 import AudioDemo from "../AudioDemo";
 import toast from "react-hot-toast";

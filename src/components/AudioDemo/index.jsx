@@ -3,8 +3,8 @@ import { FaPause } from "react-icons/fa";
 import { FaAngleDown } from "react-icons/fa6";
 import { formatTime } from "../../utils/timer";
 import toast from "react-hot-toast";
-import { updateTranscriptionWorking } from "../../constants/graphql";
-import { useMutation } from "@apollo/client";
+// import { updateTranscriptionWorking } from "../../constants/graphql";
+// import { useMutation } from "@apollo/client";
 import Webcam from "react-webcam";
 
 const AudioDemo = ({
@@ -22,7 +22,7 @@ const AudioDemo = ({
   const [transcriptWorking, setTranscriptWorking] = useState(null);
   const [loading, setLoading] = useState(false);
   const timerRef = useRef(null);
-  const [updateTranscription] = useMutation(updateTranscriptionWorking);
+  // const [updateTranscription] = useMutation(updateTranscriptionWorking);
   const [startRealInterview, setStartRealInterview] = useState(false);
   const [showReloadingText, setShowReloadingText] = useState(false);
 

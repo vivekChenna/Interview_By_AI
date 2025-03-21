@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@apollo/client";
+// import { useMutation, useQuery } from "@apollo/client";
 import Webcam from "react-webcam";
 import "regenerator-runtime/runtime";
 import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
@@ -10,24 +10,11 @@ import { FaPause } from "react-icons/fa";
 import "react-loading-skeleton/dist/skeleton.css";
 import RulesAndRegulations from "../RulesAndRegulations";
 import { getQuestions } from "../../utils/questions";
-import {
-  AI_Engineer,
-  Backend_Engineer_Devops,
-  Cloud_Engineer,
-  Content_Specialist,
-  Customer_Relations_Intern,
-  Graduate_Engineer_Trainee,
-  Intern,
-  Product_Management_Intern,
-  Project_Manager,
-  UI_UX_Engineer,
-  UX_and_Interaction_Designer_Intern,
-} from "../../constants/JobDescription";
+
 import AudioWave from "../../utils/listening-motion";
 import {
   saveUserQuestionAnswer,
   updateCandidateStatusAndLinkUsed,
-  getCandidateDetails,
 } from "../../constants/graphql";
 import { formatTime } from "../../utils/timer";
 import AudioDemo from "../AudioDemo";
@@ -35,7 +22,7 @@ import toast from "react-hot-toast";
 import { sanitizeName } from "../../utils/name-sanitization";
 
 const QuestionsPage = () => {
-  const { jobRole, uniqueId, userName } = useParams();
+  const { jobRole, uniqueId, userName, clientId } = useParams();
   const navigate = useNavigate();
   const mediaRecorderRef = useRef(null);
   const webcamRef = useRef(null);
@@ -68,33 +55,35 @@ const QuestionsPage = () => {
   const isUploading = useRef(true);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      // const myJobRole =
-      //   jobRole === "AI Engineer"
-      //     ? AI_Engineer
-      //     : jobRole === "Customer Relations Intern"
-      //     ? Customer_Relations_Intern
-      //     : jobRole === "Product Management Intern"
-      //     ? Product_Management_Intern
-      //     : jobRole === "UX and Interaction Designer Intern"
-      //     ? UX_and_Interaction_Designer_Intern
-      //     : jobRole === "Intern"
-      //     ? Intern
-      //     : jobRole === "Content Specialist"
-      //     ? Content_Specialist
-      //     : jobRole === "Graduate Engineer Trainee"
-      //     ? Graduate_Engineer_Trainee
-      //     : jobRole === "Backend Engineer Devops"
-      //     ? Backend_Engineer_Devops
-      //     : jobRole === "Cloud Engineer"
-      //     ? Cloud_Engineer
-      //     : jobRole === "UI UX Engineer"
-      //     ? UI_UX_Engineer
-      //     : jobRole === "Project Manager"
-      //     ? Project_Manager
-      //     : "";
+    getInterviewCandidateDetails();
+  }, []);
 
-      const myJobRole = userDetails?.Job?.description;
+  const getInterviewCandidateDetails = async () => {
+    try {
+      const endpoint = `https://hrbotbackend.dev.andaihub.com/api/candidates?id=${uniqueId}`;
+      const response = await fetch(endpoint);
+      const data = await response.json();
+
+      console.log("data.data", data.data);
+
+      setUserDetails(data?.data);
+
+      const expirationTime = new Date(data?.data?.linkExpiration);
+      const currentTime = new Date();
+
+      if (data?.data?.isLinkUsed === true) {
+        navigate("/error");
+      }
+
+      if (currentTime > expirationTime) {
+        navigate("/error");
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      const myJobRole = userDetails?.job?.description;
 
       try {
         const data = await getQuestions(myJobRole);
@@ -203,29 +192,29 @@ const QuestionsPage = () => {
     return () => clearInterval(timerRef.current);
   }, [isRecording]);
 
-  const {
-    data,
-    error,
-    loading: waiting,
-  } = useQuery(getCandidateDetails, {
-    variables: {
-      id: uniqueId,
-    },
-    onCompleted: (data) => {
-      const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
-      setUserDetails(data?.Candidate?.[0]);
-      const currentTime = new Date();
+  // const {
+  //   data,
+  //   error,
+  //   loading: waiting,
+  // } = useQuery(getCandidateDetails, {
+  //   variables: {
+  //     id: uniqueId,
+  //   },
+  //   onCompleted: (data) => {
+  //     const expirationTime = new Date(data?.Candidate?.[0]?.link_expiration);
+  //     setUserDetails(data?.Candidate?.[0]);
+  //     const currentTime = new Date();
 
-      if (data?.Candidate?.[0]?.is_link_used === true) {
-        navigate("/error");
-      }
+  //     if (data?.Candidate?.[0]?.is_link_used === true) {
+  //       navigate("/error");
+  //     }
 
-      if (currentTime > expirationTime) {
-        navigate("/error");
-      }
-    },
-    onError: (error) => {},
-  });
+  //     if (currentTime > expirationTime) {
+  //       navigate("/error");
+  //     }
+  //   },
+  //   onError: (error) => {},
+  // });
 
   useEffect(() => {
     if (index !== 0) {
@@ -283,10 +272,10 @@ const QuestionsPage = () => {
     };
   }, []);
 
-  const [saveQuestionAndAnswer] = useMutation(saveUserQuestionAnswer);
-  const [updateCandidateLinkAndStatus] = useMutation(
-    updateCandidateStatusAndLinkUsed
-  );
+  // const [saveQuestionAndAnswer] = useMutation(saveUserQuestionAnswer);
+  // const [updateCandidateLinkAndStatus] = useMutation(
+  //   updateCandidateStatusAndLinkUsed
+  // );
 
   const startRecording = async () => {
     try {
@@ -497,12 +486,26 @@ const QuestionsPage = () => {
       setLoading(true);
       stopListening();
       await completeUpload();
-      await updateCandidateLinkAndStatus({
-        variables: {
-          id: uniqueId,
-          status: "pending",
-        },
-      });
+      // await updateCandidateLinkAndStatus({
+      //   variables: {
+      //     id: uniqueId,
+      //     status: "pending",
+      //   },
+      // });
+
+      const response = await fetch(
+        `https://hrbotbackend.dev.andaihub.com/api/candidate/updatelinkandstatus`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: uniqueId,
+            status: "pending",
+            isLinkUsed: true,
+          }),
+        }
+      );
+
       await sendEmail({ ...userDetails });
 
       setLoading(false);
@@ -543,13 +546,32 @@ const QuestionsPage = () => {
     try {
       setErrorMsg("");
       setIsQuestionAndAnswerSaved(true);
-      await saveQuestionAndAnswer({
-        variables: {
+      // await saveQuestionAndAnswer({
+      //   variables: {
+      //     candidateId: uniqueId,
+      //     question: questions[index]?.question,
+      //     answer: transcript,
+      //   },
+      // });
+
+      const endpoint = "https://hrbotbackend.dev.andaihub.com/api/interview_responses";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           candidateId: uniqueId,
+          clientId: clientId,
           question: questions[index]?.question,
           answer: transcript,
-        },
+        }),
       });
+
+      // if (response.ok) {
+      //   toast.success("success");
+      // }
 
       if (index < questions.length - 1) {
         handleNextQuestion();
@@ -584,13 +606,29 @@ const QuestionsPage = () => {
       setShowSubmitBtn(false);
       muteCandidate();
       setIsRecording(false);
-      await saveQuestionAndAnswer({
-        variables: {
+      // await saveQuestionAndAnswer({
+      //   variables: {
+      //     candidateId: uniqueId,
+      //     question: questions[index]?.question,
+      //     answer: "",
+      //   },
+      // });
+
+      const endpoint = "https://hrbotbackend.dev.andaihub.com/api/interview_responses";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           candidateId: uniqueId,
+          clientId: clientId,
           question: questions[index]?.question,
           answer: "",
-        },
+        }),
       });
+
       if (index === questions.length - 1) {
         setShowSkipButton(false);
         setShowEndAndReview(true);

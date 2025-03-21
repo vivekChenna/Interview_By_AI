@@ -1,7 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
-import { ApolloProvider } from "@apollo/client";
-import client from "./config/graphql-client";
+// import { ApolloProvider } from "@apollo/client";
+// import client from "./config/graphql-client";
 import Header from "./components/Header";
 import QuestionsPage from "./components/Questions";
 import ContextProvider from "./context/context";
@@ -11,14 +11,14 @@ import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
-    <ApolloProvider client={client}>
+    // <ApolloProvider client={client}>
       <BrowserRouter>
         <ContextProvider>
           <Header />
           <Routes>
             <Route path="/error" element={<ErrorPage />} />
             <Route
-              path="/interview/:userName/:jobRole/:uniqueId"
+              path="/interview/:userName/:jobRole/:clientId/:uniqueId"
               element={<QuestionsPage />}
             />
             <Route path="/complete" element={<InterviewComplete />} />
@@ -26,7 +26,7 @@ function App() {
           <Toaster />
         </ContextProvider>
       </BrowserRouter>
-    </ApolloProvider>
+    // </ApolloProvider>
   );
 }
 

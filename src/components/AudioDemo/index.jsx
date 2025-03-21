@@ -59,12 +59,26 @@ const AudioDemo = ({
     try {
       setLoading(true);
 
-      await updateTranscription({
-        variables: {
-          id: candidateId,
-          isWorking,
-        },
-      });
+      // await updateTranscription({
+      //   variables: {
+      //     id: candidateId,
+      //     isWorking,
+      //   },
+      // });
+
+      const response = await fetch(
+        `https://hrbotbackend.dev.andaihub.com/api/candidate/updatetranscriptionworking`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: candidateId,
+            isTranscriptionWorking: isWorking,
+          }),
+        }
+      );
 
       if (isWorking === false) {
         setShowReloadingText(true);
